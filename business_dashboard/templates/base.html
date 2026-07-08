@@ -22,7 +22,9 @@
                 <i class="fas fa-file-invoice"></i> Business PO
             </div>
             <ul class="sidebar-nav">
+                {% if session.get("user_role") == "Admin" or session.get("user_permissions", {}).get("dashboard") %}
                 <li><a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}" title="View your overall business health and stats"><i class="fas fa-tachometer-alt" style="width: 20px;"></i> Dashboard</a></li>
+                {% endif %}
                 
                 <li>
                     <a href="#" style="justify-content: space-between;">
@@ -30,16 +32,25 @@
                         <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
                     </a>
                     <ul class="sidebar-submenu" style="display: none;">
+                        {% if session.get("user_role") == "Admin" or session.get("user_permissions", {}).get("create_po") %}
                         <li><a href="{{ url_for('create_po') }}" class="{% if request.endpoint == 'create_po' %}active{% endif %}" title="Create a new Purchase Order to send to a vendor"><i class="fas fa-file-alt" style="width: 20px;"></i> Create PO</a></li>
+                        {% endif %}
+                        {% if session.get("user_role") == "Admin" or session.get("user_permissions", {}).get("view_pos") %}
                         <li><a href="{{ url_for('submitted_pos') }}" class="{% if request.endpoint == 'submitted_pos' %}active{% endif %}" title="View all historical Purchase Orders"><i class="fas fa-paper-plane" style="width: 20px;"></i> Submitted PO</a></li>
+                        {% endif %}
+                        {% if session.get("user_role") == "Admin" or session.get("user_permissions", {}).get("create_invoice") %}
                         <li><a href="{{ url_for('create_invoice') }}" class="{% if request.endpoint == 'create_invoice' %}active{% endif %}" title="Generate a bill/invoice for your customers"><i class="fas fa-file-invoice-dollar" style="width: 20px;"></i> Create Invoice</a></li>
+                        {% endif %}
+                        {% if session.get("user_role") == "Admin" or session.get("user_permissions", {}).get("view_pos") %}
                         <li><a href="{{ url_for('po_status') }}" class="{% if request.endpoint == 'po_status' %}active{% endif %}" title="Track the payment and delivery status of POs"><i class="fas fa-search" style="width: 20px;"></i> PO Status</a></li>
+                        {% endif %}
                     </ul>
                 </li>
                 
 
                 
                 <li>
+{% if session.get("user_role") == "Admin" or session.get("user_permissions", {}).get("transport") %}
                     <a href="#" style="justify-content: space-between;">
                         <span><i class="fas fa-truck" style="width: 20px;"></i> Transport</span>
                         <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
@@ -48,7 +59,9 @@
                         <li><a href="{{ url_for('transport') }}" class="{% if request.endpoint == 'transport' %}active{% endif %}" title="Track your courier shipments and delivery status"><i class="fas fa-route" style="width: 20px;"></i> Overview</a></li>
                     </ul>
                 </li>
+                {% endif %}
                 
+{% if session.get("user_role") == "Admin" or session.get("user_permissions", {}).get("inventory") %}
                 <li>
                     <a href="#" style="justify-content: space-between;">
                         <span><i class="fas fa-boxes" style="width: 20px;"></i> Inventory</span>
@@ -58,6 +71,7 @@
                         <li><a href="{{ url_for('inventory') }}" class="{% if request.endpoint == 'inventory' %}active{% endif %}" title="Manage your product catalog and stock levels"><i class="fas fa-warehouse" style="width: 20px;"></i> Stock</a></li>
                     </ul>
                 </li>
+                {% endif %}
                 
                 {% if session.get('user_role') == 'Admin' %}
                 <li>

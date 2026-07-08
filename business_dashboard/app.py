@@ -20,6 +20,25 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+def permission_required(permission_name):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not session.get('logged_in'):
+                return redirect(url_for('login'))
+            if session.get('user_role') == 'Admin':
+                return f(*args, **kwargs)
+            
+            user_perms = session.get('user_permissions', {})
+            if not user_perms.get(permission_name):
+                flash('Access denied. You do not have permission to view this feature.', 'error')
+                if request.endpoint == 'dashboard':
+                    return redirect(url_for('login'))
+                return redirect(url_for('dashboard'))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
 def send_otp_email(to_email, otp_code):
     # Using the Office 365 credentials provided
     sender_email = "agent4@indusschool.com"
@@ -110,7 +129,11 @@ def login():
                 'email': user.get('email', ''),
                 'role': user.get('role', 'Admin'),
                 'phone': user.get('phone', ''),
-                'photo': user.get('photo', '')
+                'photo': user.get('photo', ''),
+                'permissions': user.get('permissions', {
+                    'dashboard': False, 'create_po': False, 'view_pos': False,
+                    'create_invoice': False, 'inventory': False, 'transport': False, 'delete_data': False
+                })
             }
             session['otp'] = otp
             session['otp_expiry'] = (datetime.datetime.now() + datetime.timedelta(minutes=10)).timestamp()
@@ -150,6 +173,7 @@ def verify_otp():
             session['user_role'] = user_data['role']
             session['user_phone'] = user_data['phone']
             session['user_photo'] = user_data['photo']
+            session['user_permissions'] = user_data.get('permissions', {})
             
             return redirect(url_for('dashboard'))
         else:
@@ -158,6 +182,7 @@ def verify_otp():
     return render_template('verify_otp.html')
 
 @app.route('/dashboard')
+@permission_required('dashboard')
 def dashboard():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -190,6 +215,7 @@ def dashboard():
                            total_transport=total_transport)
 
 @app.route('/create-po', methods=['GET', 'POST'])
+@permission_required('create_po')
 def create_po():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -276,7 +302,7 @@ def create_po():
     return render_template('create_po.html', vendors=vendors, po_number=po_number, total_pos=total_pos, total_amount=total_amount, recent_pos=recent_pos)
 
 @app.route('/delete-po/<po_id>', methods=['POST'])
-@admin_required
+@permission_required('delete_data')
 def delete_po(po_id):
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -287,6 +313,7 @@ def delete_po(po_id):
     return redirect(url_for('create_po'))
 
 @app.route('/view-po/<po_id>')
+@permission_required('view_pos')
 def view_po(po_id):
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -304,7 +331,7 @@ def view_po(po_id):
     return render_template('view_po.html', po=po, vendor=vendor)
 
 @app.route('/delete-po-dashboard/<po_id>')
-@admin_required
+@permission_required('delete_data')
 def delete_po_dashboard(po_id):
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -319,6 +346,7 @@ def delete_po_dashboard(po_id):
     return redirect(url_for('dashboard'))
 
 @app.route('/add-vendor', methods=['GET', 'POST'])
+@permission_required('create_po')
 def add_vendor():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -357,6 +385,7 @@ def get_vendor(vendor_id):
     return jsonify({'success': False})
 
 @app.route('/submitted-pos')
+@permission_required('view_pos')
 def submitted_pos():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -385,6 +414,7 @@ def submitted_pos():
     return render_template('submitted_pos.html', pos=all_pos, total_pos=total_pos, approved_count=approved_count)
 
 @app.route('/create-invoice', methods=['GET', 'POST'])
+@permission_required('create_invoice')
 def create_invoice():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -469,6 +499,7 @@ def create_invoice():
     return render_template('create_invoice.html', vendors=vendors, invoice_number=invoice_number, pos=pos)
 
 @app.route('/po-status')
+@permission_required('view_pos')
 def po_status():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -526,6 +557,7 @@ def update_po_status(po_id):
 
 
 @app.route('/transport')
+@permission_required('transport')
 def transport():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -541,6 +573,7 @@ def transport():
     return render_template('transport.html', shipments=shipments, total=total_shipments, in_transit=in_transit, delivered=delivered, preparing=preparing)
 
 @app.route('/add-transport', methods=['POST'])
+@permission_required('transport')
 def add_transport():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -575,6 +608,7 @@ def update_transport_status(shipment_id):
 
 
 @app.route('/inventory')
+@permission_required('inventory')
 def inventory():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -604,7 +638,7 @@ def inventory():
     return render_template('inventory.html', items=items, total=total_items, in_stock=in_stock, low_stock=low_stock, out_stock=out_of_stock)
 
 @app.route('/delete-inventory/<item_id>', methods=['POST'])
-@admin_required
+@permission_required('delete_data')
 def delete_inventory(item_id):
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -615,6 +649,7 @@ def delete_inventory(item_id):
     return redirect(url_for('inventory'))
 
 @app.route('/add-inventory', methods=['POST'])
+@permission_required('inventory')
 def add_inventory():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -665,6 +700,29 @@ def update_role(user_id):
         
     users_collection.update_one({'_id': ObjectId(user_id)}, {'$set': {'role': new_role}})
     flash('User role updated successfully!', 'success')
+    return redirect(url_for('users'))
+
+@app.route('/update-permissions/<user_id>', methods=['POST'])
+@admin_required
+def update_permissions(user_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+        
+    from bson.objectid import ObjectId
+    
+    # Grab checkboxes (if present, they are 'on', else None)
+    new_perms = {
+        'dashboard': request.form.get('dashboard') == 'on',
+        'create_po': request.form.get('create_po') == 'on',
+        'view_pos': request.form.get('view_pos') == 'on',
+        'create_invoice': request.form.get('create_invoice') == 'on',
+        'inventory': request.form.get('inventory') == 'on',
+        'transport': request.form.get('transport') == 'on',
+        'delete_data': request.form.get('delete_data') == 'on'
+    }
+    
+    users_collection.update_one({'_id': ObjectId(user_id)}, {'$set': {'permissions': new_perms}})
+    flash('User permissions updated successfully!', 'success')
     return redirect(url_for('users'))
 
 @app.route('/utility')
@@ -720,12 +778,14 @@ def register():
         # Assign 'Admin' to first user, otherwise 'Employee'
         is_first_user = users_collection.count_documents({}) == 0
         role = 'Admin' if is_first_user else 'Employee'
+        default_perms = {'dashboard': False, 'create_po': False, 'view_pos': False, 'create_invoice': False, 'inventory': False, 'transport': False, 'delete_data': False}
         
         users_collection.insert_one({
             'name': name,
             'email': email,
             'password': hashed_password,
-            'role': role
+            'role': role,
+            'permissions': {} if role == 'Admin' else default_perms
         })
         flash('Registration successful! Please login.', 'success')
         return redirect(url_for('login'))
