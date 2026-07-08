@@ -811,11 +811,7 @@ def update_settings():
     return redirect(url_for('utility'))
 
 @app.route('/register', methods=['GET', 'POST'])
-@admin_required
 def register():
-    if not session.get('logged_in'):
-        return redirect(url_for('login'))
-        
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
