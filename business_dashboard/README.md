@@ -1,3 +1,5 @@
+![Indus International School Logo](static/images/logo.png)
+
 # Business PO Dashboard
 
 A comprehensive, open-source dashboard designed to help small and medium businesses streamline their operations. Manage Purchase Orders, Invoices, Inventory, and Transport logistics seamlessly in one beautifully designed, user-friendly interface.
