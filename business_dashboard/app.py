@@ -42,9 +42,11 @@ try:
 except OSError:
     pass # Vercel has a read-only filesystem, ignore the error
 
+import certifi
+
 # Connect to MongoDB
 mongo_uri = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
-client = MongoClient(mongo_uri)
+client = MongoClient(mongo_uri, tlsCAFile=certifi.where())
 db = client['business_dashboard_db']
 users_collection = db['users']
 vendors_collection = db['vendors']

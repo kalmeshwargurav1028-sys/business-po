@@ -2,4 +2,5 @@ Flask
 python-dotenv
 pymongo[srv]
 dnspython
+certifi
 Werkzeug
