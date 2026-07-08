@@ -31,9 +31,12 @@ def send_otp_email(to_email, otp_code):
         print(f"Failed to send email: {e}")
         return False
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app = Flask(__name__, 
+            template_folder=os.path.join(BASE_DIR, 'templates'),
+            static_folder=os.path.join(BASE_DIR, 'static'))
 app.secret_key = 'business_dashboard_secret'
-app.config['UPLOAD_FOLDER'] = 'static/uploads/profiles'
+app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static/uploads/profiles')
 try:
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 except OSError:
