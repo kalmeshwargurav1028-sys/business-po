@@ -243,10 +243,34 @@ def dashboard():
     template_name = 'admin_dashboard.html' if session.get('user_role') == 'Admin' else 'employee_dashboard.html'
     
     recent_employee_logs = []
+    total_logs = 0
+    page = request.args.get('page', 1, type=int)
+    emp_search = request.args.get('emp_search', '')
+    action_filter = request.args.get('action_filter', '')
+    per_page = 15
+    total_pages = 1
+    
     if template_name == 'admin_dashboard.html':
-        recent_employee_logs = list(activity_collection.find({'role': 'Employee'}).sort('timestamp', -1).limit(15))
+        query = {'role': 'Employee'}
+        if emp_search:
+            query['user_name'] = {'$regex': emp_search, '$options': 'i'}
+        if action_filter:
+            query['action'] = action_filter
+            
+        total_logs = activity_collection.count_documents(query)
+        total_pages = max(1, (total_logs + per_page - 1) // per_page)
+        page = min(page, total_pages)
+        
+        recent_employee_logs = list(activity_collection.find(query)
+                                    .sort('timestamp', -1)
+                                    .skip((page - 1) * per_page)
+                                    .limit(per_page))
     
     return render_template(template_name, 
+                           page=page,
+                           total_pages=total_pages,
+                           emp_search=emp_search,
+                           action_filter=action_filter,
                            total_inventory=total_inventory, 
                            inventory_value=inventory_value,
                            low_stock=low_stock,

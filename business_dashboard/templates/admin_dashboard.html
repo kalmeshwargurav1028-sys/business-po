@@ -162,14 +162,37 @@
 
 <!-- Employee Audit Trail (Full Width below) -->
 <div class="card" style="margin-top: 2rem;">
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <i class="fas fa-user-shield" style="color: #64748b;"></i>
-            <h3 class="card-title" style="margin: 0;">Employee Audit Trail</h3>
+    <div class="card-header" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <i class="fas fa-user-shield" style="color: #64748b;"></i>
+                <h3 class="card-title" style="margin: 0;">Employee Audit Trail</h3>
+            </div>
+            <div style="font-size: 0.85rem; color: #64748b; background: #f1f5f9; padding: 0.25rem 0.75rem; border-radius: 9999px;">
+                Security & Compliance
+            </div>
         </div>
-        <div style="font-size: 0.85rem; color: #64748b; background: #f1f5f9; padding: 0.25rem 0.75rem; border-radius: 9999px;">
-            Security & Compliance
-        </div>
+        
+        <form method="GET" action="{{ url_for('dashboard') }}" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 200px;">
+                <input type="text" name="emp_search" value="{{ emp_search }}" placeholder="Search by Employee Name..." style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem;">
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+                <select name="action_filter" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.85rem; background: white;">
+                    <option value="">All Actions</option>
+                    <option value="Logged In" {% if action_filter == 'Logged In' %}selected{% endif %}>Logged In</option>
+                    <option value="Created PO" {% if action_filter == 'Created PO' %}selected{% endif %}>Created PO</option>
+                    <option value="Deleted PO" {% if action_filter == 'Deleted PO' %}selected{% endif %}>Deleted PO</option>
+                    <option value="Created Invoice" {% if action_filter == 'Created Invoice' %}selected{% endif %}>Created Invoice</option>
+                    <option value="Added Vendor" {% if action_filter == 'Added Vendor' %}selected{% endif %}>Added Vendor</option>
+                    <option value="Added Inventory" {% if action_filter == 'Added Inventory' %}selected{% endif %}>Added Inventory</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem; border-radius: 4px;">Filter Logs</button>
+            {% if emp_search or action_filter %}
+                <a href="{{ url_for('dashboard') }}" style="color: #64748b; font-size: 0.85rem; text-decoration: none;">Clear</a>
+            {% endif %}
+        </form>
     </div>
     <div class="table-responsive">
         <table class="table" style="margin: 0; width: 100%; text-align: left; border-collapse: collapse;">
@@ -209,6 +232,26 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+    
+    <!-- Pagination -->
+    <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0; background: #f8fafc;">
+        <div style="font-size: 0.85rem; color: #64748b;">
+            Showing Page {{ page }} of {{ total_pages }}
+        </div>
+        <div style="display: flex; gap: 0.5rem;">
+            {% if page > 1 %}
+                <a href="{{ url_for('dashboard', page=page-1, emp_search=emp_search, action_filter=action_filter) }}" class="btn" style="background: white; border: 1px solid #cbd5e1; color: #334155; padding: 0.4rem 0.75rem; font-size: 0.85rem; border-radius: 4px; text-decoration: none;">Previous</a>
+            {% else %}
+                <span class="btn" style="background: #f1f5f9; border: 1px solid #e2e8f0; color: #94a3b8; padding: 0.4rem 0.75rem; font-size: 0.85rem; border-radius: 4px; cursor: not-allowed;">Previous</span>
+            {% endif %}
+            
+            {% if page < total_pages %}
+                <a href="{{ url_for('dashboard', page=page+1, emp_search=emp_search, action_filter=action_filter) }}" class="btn" style="background: white; border: 1px solid #cbd5e1; color: #334155; padding: 0.4rem 0.75rem; font-size: 0.85rem; border-radius: 4px; text-decoration: none;">Next</a>
+            {% else %}
+                <span class="btn" style="background: #f1f5f9; border: 1px solid #e2e8f0; color: #94a3b8; padding: 0.4rem 0.75rem; font-size: 0.85rem; border-radius: 4px; cursor: not-allowed;">Next</span>
+            {% endif %}
+        </div>
     </div>
 </div>
 
