@@ -32,6 +32,16 @@
                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
                     <input type="checkbox" name="view_financials" id="perm_view_financials"> <strong>View Financial Amounts</strong>
                 </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="approve_pos" id="perm_approve_pos"> <strong>Approve Purchase Orders</strong>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="finalize_invoices" id="perm_finalize_invoices"> <strong>Finalize Invoices</strong>
+                </label>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                    <label for="perm_spending_limit" style="font-weight: 600; font-size: 0.9rem; color: #475569;">PO Spending Limit ($):</label>
+                    <input type="number" name="spending_limit" id="perm_spending_limit" min="0" step="0.01" style="padding: 0.25rem 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; width: 120px;" placeholder="No limit">
+                </div>
                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #ef4444; font-weight: 600;">
                     <input type="checkbox" name="delete_data" id="perm_delete_data"> Allow Deleting Data (DANGER)
                 </label>
@@ -58,6 +68,9 @@ function openPermModal(userId, userName, permissions) {
     document.getElementById('perm_transport').checked = permissions.transport || false;
     document.getElementById('perm_delete_data').checked = permissions.delete_data || false;
     document.getElementById('perm_view_financials').checked = permissions.view_financials || false;
+    document.getElementById('perm_approve_pos').checked = permissions.approve_pos || false;
+    document.getElementById('perm_finalize_invoices').checked = permissions.finalize_invoices || false;
+    document.getElementById('perm_spending_limit').value = permissions.spending_limit || '';
     
     document.getElementById('permModal').style.display = 'block';
 }
@@ -96,6 +109,16 @@ function openPermModal(userId, userName, permissions) {
                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
                     <input type="checkbox" name="view_financials" id="perm_view_financials"> <strong>View Financial Amounts</strong>
                 </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="approve_pos" id="perm_approve_pos2"> <strong>Approve Purchase Orders</strong>
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="finalize_invoices" id="perm_finalize_invoices2"> <strong>Finalize Invoices</strong>
+                </label>
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                    <label for="perm_spending_limit" style="font-weight: 600; font-size: 0.9rem; color: #475569;">PO Spending Limit ($):</label>
+                    <input type="number" name="spending_limit" id="perm_spending_limit" min="0" step="0.01" style="padding: 0.25rem 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; width: 120px;" placeholder="No limit">
+                </div>
                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #ef4444; font-weight: 600;">
                     <input type="checkbox" name="delete_data" id="perm_delete_data"> Allow Deleting Data (DANGER)
                 </label>
@@ -122,6 +145,9 @@ function openPermModal(userId, userName, permissions) {
     document.getElementById('perm_transport').checked = permissions.transport || false;
     document.getElementById('perm_delete_data').checked = permissions.delete_data || false;
     document.getElementById('perm_view_financials').checked = permissions.view_financials || false;
+    document.getElementById('perm_approve_pos').checked = permissions.approve_pos || false;
+    document.getElementById('perm_finalize_invoices').checked = permissions.finalize_invoices || false;
+    document.getElementById('perm_spending_limit').value = permissions.spending_limit || '';
     
     document.getElementById('permModal').style.display = 'block';
 }

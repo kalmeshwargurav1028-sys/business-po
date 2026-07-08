@@ -40,6 +40,7 @@
                         {% endif %}
                         {% if session.get("user_role") == "Admin" or session.get("user_permissions", {}).get("create_invoice") %}
                         <li><a href="{{ url_for('create_invoice') }}" class="{% if request.endpoint == 'create_invoice' %}active{% endif %}" title="Generate a bill/invoice for your customers"><i class="fas fa-file-invoice-dollar" style="width: 20px;"></i> Create Invoice</a></li>
+                        <li><a href="{{ url_for('invoices') }}" class="{% if request.endpoint == 'invoices' %}active{% endif %}" title="View and finalize drafted invoices"><i class="fas fa-list" style="width: 20px;"></i> Invoices</a></li>
                         {% endif %}
                         {% if session.get("user_role") == "Admin" or session.get("user_permissions", {}).get("view_pos") %}
                         <li><a href="{{ url_for('po_status') }}" class="{% if request.endpoint == 'po_status' %}active{% endif %}" title="Track the payment and delivery status of POs"><i class="fas fa-search" style="width: 20px;"></i> PO Status</a></li>
@@ -85,6 +86,11 @@
                     </a>
                 </li>
                 {% endif %}
+                <li>
+                    <a href="{{ url_for('tasks') }}" class="{% if request.endpoint == 'tasks' %}active{% endif %}" style="justify-content: space-between;">
+                        <span><i class="fas fa-tasks" style="width: 20px;"></i> {% if session.get('user_role') == 'Admin' %}Task Delegation{% else %}My Tasks{% endif %}</span>
+                    </a>
+                </li>
 
             </ul>
         </aside>

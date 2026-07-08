@@ -230,7 +230,13 @@
                     <div class="action-links" style="display: flex; gap: 0.75rem; align-items: center; font-size: 1.1rem;">
                         <a href="{{ url_for('view_po', po_id=po._id) }}" style="color: var(--primary-color); text-decoration: none;" title="View"><i class="fas fa-eye"></i></a>
                         <a href="{{ url_for('view_po', po_id=po._id) }}?print=true" target="_blank" style="color: var(--text-muted); text-decoration: none;" title="Download"><i class="fas fa-download"></i></a>
+                        {% if po.display_status == 'Pending Approval' and (session.get('user_role') == 'Admin' or session.get('user_permissions', {}).get('approve_pos')) %}
+                        <form action="{{ url_for('approve_po', po_id=po._id) }}" method="POST" style="display: inline; margin: 0;">
+                            <button type="submit" style="background: none; border: none; color: #10b981; cursor: pointer; padding: 0; font-size: 1.1rem;" title="Approve"><i class="fas fa-check-circle"></i></button>
+                        </form>
+                        {% else %}
                         <button onclick="alert('PO has been successfully resent to the vendor!')" style="background: none; border: none; color: #10b981; cursor: pointer; padding: 0; font-size: 1.1rem;" title="Resend"><i class="fas fa-paper-plane"></i></button>
+                        {% endif %}
                         <form action="{{ url_for('delete_po', po_id=po._id) }}" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to delete this Purchase Order?');">
                             <button type="submit" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; font-size: 1.1rem;" title="Delete"><i class="fas fa-trash"></i></button>
                         </form>

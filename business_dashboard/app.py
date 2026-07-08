@@ -102,6 +102,7 @@ inventory_collection = db['inventory']
 transport_collection = db['transport']
 settings_collection = db['settings']
 activity_collection = db['activity_logs']
+tasks_collection = db['tasks']
 
 @app.context_processor
 def inject_settings():
@@ -325,8 +326,16 @@ def create_po():
         total_shipping = request.form.get('total_shipping', 0)
         total_tax = request.form.get('total_tax', 0)
         total_discount = request.form.get('total_discount', 0)
-        total = request.form.get('total', 0)
+        total = float(request.form.get('total', 0))
         action = request.form.get('action', 'generated')
+        
+        status = 'draft' if action == 'draft' else 'generated'
+        
+        # Enforce Spending Limits for Employees
+        if session.get('user_role') != 'Admin' and action != 'draft':
+            spending_limit = session.get('user_permissions', {}).get('spending_limit')
+            if spending_limit is not None and total > spending_limit:
+                status = 'pending_approval'
         
         po_collection.insert_one({
             'po_number': po_number,
@@ -341,14 +350,16 @@ def create_po():
             'total_shipping': float(total_shipping),
             'total_tax': float(total_tax),
             'total_discount': float(total_discount),
-            'total': float(total),
-            'status': 'draft' if action == 'draft' else 'generated',
+            'total': total,
+            'status': status,
             'created_by': session.get('user_id'),
             'date_created': datetime.datetime.now()
         })
         
         if action == 'draft':
             flash('Purchase Order saved as draft successfully!', 'success')
+        elif status == 'pending_approval':
+            flash(f'Purchase Order submitted and is Pending Approval (Exceeds limit of ${spending_limit:,.2f})', 'warning')
         else:
             flash('Purchase Order generated successfully!', 'success')
             
@@ -380,6 +391,22 @@ def delete_po(po_id):
     po_collection.delete_one({'_id': ObjectId(po_id)})
     flash('Purchase order deleted successfully!', 'success')
     return redirect(url_for('create_po'))
+
+@app.route('/approve-po/<po_id>', methods=['POST'])
+def approve_po(po_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    
+    # Check if admin or has approve_pos permission
+    if session.get('user_role') != 'Admin' and not session.get('user_permissions', {}).get('approve_pos'):
+        flash('You do not have permission to approve Purchase Orders.', 'error')
+        return redirect(url_for('submitted_pos'))
+        
+    from bson.objectid import ObjectId
+    po_collection.update_one({'_id': ObjectId(po_id)}, {'$set': {'status': 'generated'}})
+    log_activity('Approved PO', f'Approved Purchase Order ID {po_id}')
+    flash('Purchase order approved successfully!', 'success')
+    return redirect(url_for('submitted_pos'))
 
 @app.route('/view-po/<po_id>')
 @permission_required('view_pos')
@@ -473,15 +500,51 @@ def submitted_pos():
         po['vendor_name'] = vendors.get(po.get('vendor_id'), 'Unknown Vendor')
         po['items_count'] = sum(1 for item in po.get('items', []) if isinstance(item, dict))
         
-        # Map our internal status to display status
         internal_status = po.get('status', 'generated')
         if internal_status == 'draft':
-            po['display_status'] = 'Pending'
+            po['display_status'] = 'Draft'
+        elif internal_status == 'pending_approval':
+            po['display_status'] = 'Pending Approval'
         else:
             po['display_status'] = 'Approved'
             approved_count += 1
             
     return render_template('submitted_pos.html', pos=all_pos, total_pos=total_pos, approved_count=approved_count)
+
+@app.route('/invoices')
+@permission_required('create_invoice')
+def invoices():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+        
+    all_invoices = list(invoices_collection.find().sort("date_created", -1))
+    vendors = {str(v['_id']): v['name'] for v in vendors_collection.find()}
+    
+    total_invoices = len(all_invoices)
+    finalized_count = 0
+    
+    for inv in all_invoices:
+        inv['_id'] = str(inv['_id'])
+        inv['vendor_name'] = vendors.get(inv.get('vendor_id'), 'Unknown Customer')
+        if inv.get('doc_status') == 'generated':
+            finalized_count += 1
+            
+    return render_template('invoices.html', invoices=all_invoices, total=total_invoices, finalized=finalized_count)
+
+@app.route('/finalize-invoice/<inv_id>', methods=['POST'])
+def finalize_invoice(inv_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+        
+    if session.get('user_role') != 'Admin' and not session.get('user_permissions', {}).get('finalize_invoices'):
+        flash('You do not have permission to finalize invoices.', 'error')
+        return redirect(url_for('invoices'))
+        
+    from bson.objectid import ObjectId
+    invoices_collection.update_one({'_id': ObjectId(inv_id)}, {'$set': {'doc_status': 'generated'}})
+    log_activity('Finalized Invoice', f'Finalized Invoice ID {inv_id}')
+    flash('Invoice finalized successfully!', 'success')
+    return redirect(url_for('invoices'))
 
 @app.route('/create-invoice', methods=['GET', 'POST'])
 @permission_required('create_invoice')
@@ -800,7 +863,12 @@ def update_permissions(user_id):
         
     from bson.objectid import ObjectId
     
-    # Grab checkboxes (if present, they are 'on', else None)
+    spending_limit_val = request.form.get('spending_limit')
+    try:
+        spending_limit = float(spending_limit_val) if spending_limit_val else None
+    except ValueError:
+        spending_limit = None
+
     new_perms = {
         'dashboard': request.form.get('dashboard') == 'on',
         'create_po': request.form.get('create_po') == 'on',
@@ -809,7 +877,10 @@ def update_permissions(user_id):
         'inventory': request.form.get('inventory') == 'on',
         'transport': request.form.get('transport') == 'on',
         'delete_data': request.form.get('delete_data') == 'on',
-        'view_financials': request.form.get('view_financials') == 'on'
+        'view_financials': request.form.get('view_financials') == 'on',
+        'approve_pos': request.form.get('approve_pos') == 'on',
+        'finalize_invoices': request.form.get('finalize_invoices') == 'on',
+        'spending_limit': spending_limit
     }
     
     users_collection.update_one({'_id': ObjectId(user_id)}, {'$set': {'permissions': new_perms}})
@@ -944,6 +1015,81 @@ def update_profile():
     
     flash('Profile updated successfully!', 'success')
     return redirect(url_for('profile'))
+
+@app.route('/tasks', methods=['GET', 'POST'])
+def tasks():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+        
+    if request.method == 'POST':
+        # Only admins can create tasks
+        if session.get('user_role') != 'Admin':
+            flash('Only admins can assign tasks.', 'error')
+            return redirect(url_for('tasks'))
+            
+        title = request.form.get('title')
+        description = request.form.get('description')
+        assignee_id = request.form.get('assignee_id')
+        due_date = request.form.get('due_date')
+        
+        assignee = users_collection.find_one({'_id': ObjectId(assignee_id)})
+        assignee_name = assignee['name'] if assignee else 'Unknown'
+        
+        tasks_collection.insert_one({
+            'title': title,
+            'description': description,
+            'assignee_id': assignee_id,
+            'assignee_name': assignee_name,
+            'due_date': due_date,
+            'status': 'Pending',
+            'created_by': session.get('user_id'),
+            'created_by_name': session.get('user_name'),
+            'date_created': datetime.datetime.now()
+        })
+        log_activity('Assigned Task', f'Assigned task "{title}" to {assignee_name}')
+        flash('Task assigned successfully!', 'success')
+        return redirect(url_for('tasks'))
+        
+    # Get all users for the assignment dropdown
+    all_users = list(users_collection.find({'role': 'Employee'}))
+    for u in all_users:
+        u['_id'] = str(u['_id'])
+        
+    # Fetch tasks depending on role
+    if session.get('user_role') == 'Admin':
+        all_tasks = list(tasks_collection.find().sort('date_created', -1))
+    else:
+        all_tasks = list(tasks_collection.find({'assignee_id': str(session.get('user_id'))}).sort('date_created', -1))
+        
+    for t in all_tasks:
+        t['_id'] = str(t['_id'])
+        
+    return render_template('tasks.html', tasks=all_tasks, employees=all_users)
+
+@app.route('/update-task/<task_id>', methods=['POST'])
+def update_task(task_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+        
+    from bson.objectid import ObjectId
+    status = request.form.get('status')
+    
+    task = tasks_collection.find_one({'_id': ObjectId(task_id)})
+    if not task:
+        flash('Task not found.', 'error')
+        return redirect(url_for('tasks'))
+        
+    # Only assignee or admin can update status
+    if session.get('user_role') != 'Admin' and task.get('assignee_id') != str(session.get('user_id')):
+        flash('You can only update your own tasks.', 'error')
+        return redirect(url_for('tasks'))
+        
+    tasks_collection.update_one({'_id': ObjectId(task_id)}, {'$set': {'status': status}})
+    if status == 'Completed':
+        log_activity('Completed Task', f'Completed task "{task.get("title")}"')
+        
+    flash('Task status updated!', 'success')
+    return redirect(url_for('tasks'))
 
 if __name__ == '__main__':
     print("Local server URL: http://127.0.0.1:4000")
