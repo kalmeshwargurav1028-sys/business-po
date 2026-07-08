@@ -15,7 +15,7 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not session.get('logged_in'):
-            return redirect(url_for('login'))
+            return redirect(url_for('admin_portal'))
         if session.get('user_role') != 'Admin':
             flash('Access denied. Admin privileges required.', 'error')
             return redirect(url_for('dashboard'))
@@ -27,7 +27,8 @@ def permission_required(permission_name):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if not session.get('logged_in'):
-                return redirect(url_for('login'))
+                fallback = 'admin_portal' if session.get('login_type') == 'admin' else 'login'
+                return redirect(url_for(fallback))
             if session.get('user_role') == 'Admin':
                 return f(*args, **kwargs)
             
@@ -977,18 +978,24 @@ def register():
 def forgot_password():
     if request.method == 'POST':
         # Mock forgot password
-        return redirect(url_for('login'))
+        fallback = 'admin_portal' if session.get('login_type') == 'admin' else 'login'
+        return redirect(url_for(fallback))
     return render_template('forgot_password.html')
 
 @app.route('/logout')
 def logout():
+    log_activity('Logged Out', 'User logged out')
+    login_type = session.get('login_type', 'employee')
     session.clear()
+    if login_type == 'admin':
+        return redirect(url_for('admin_portal'))
     return redirect(url_for('login'))
 
 @app.route('/profile')
 def profile():
     if not session.get('logged_in'):
-        return redirect(url_for('login'))
+        fallback = 'admin_portal' if session.get('login_type') == 'admin' else 'login'
+        return redirect(url_for(fallback))
         
     from bson.objectid import ObjectId
     user = users_collection.find_one({'_id': ObjectId(session['user_id'])})
@@ -997,7 +1004,8 @@ def profile():
 @app.route('/update-profile', methods=['POST'])
 def update_profile():
     if not session.get('logged_in'):
-        return redirect(url_for('login'))
+        fallback = 'admin_portal' if session.get('login_type') == 'admin' else 'login'
+        return redirect(url_for(fallback))
         
     from bson.objectid import ObjectId
     user_id = session['user_id']
@@ -1028,7 +1036,8 @@ def update_profile():
 @app.route('/tasks', methods=['GET', 'POST'])
 def tasks():
     if not session.get('logged_in'):
-        return redirect(url_for('login'))
+        fallback = 'admin_portal' if session.get('login_type') == 'admin' else 'login'
+        return redirect(url_for(fallback))
         
     if request.method == 'POST':
         # Only admins can create tasks
@@ -1078,7 +1087,8 @@ def tasks():
 @app.route('/update-task/<task_id>', methods=['POST'])
 def update_task(task_id):
     if not session.get('logged_in'):
-        return redirect(url_for('login'))
+        fallback = 'admin_portal' if session.get('login_type') == 'admin' else 'login'
+        return redirect(url_for(fallback))
         
     from bson.objectid import ObjectId
     status = request.form.get('status')
