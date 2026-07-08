@@ -131,8 +131,11 @@ function openPermModal(userId, userName, permissions) {
 
 {% block content %}
 <div class="card">
-    <div class="card-header">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
         <h2 class="card-title">All Registered Users</h2>
+        <a href="{{ url_for('register') }}" class="btn btn-primary" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-plus"></i> Add Employee
+        </a>
     </div>
     <div class="card-body">
         {% with messages = get_flashed_messages(with_categories=true) %}

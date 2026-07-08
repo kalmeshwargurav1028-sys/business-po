@@ -811,7 +811,11 @@ def update_settings():
     return redirect(url_for('utility'))
 
 @app.route('/register', methods=['GET', 'POST'])
+@admin_required
 def register():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+        
     if request.method == 'POST':
         name = request.form.get('name')
         email = request.form.get('email')
@@ -835,8 +839,8 @@ def register():
             'role': role,
             'permissions': {} if role == 'Admin' else default_perms
         })
-        flash('Registration successful! Please login.', 'success')
-        return redirect(url_for('login'))
+        flash('Employee account created successfully!', 'success')
+        return redirect(url_for('users'))
     return render_template('register.html')
 
 @app.route('/forgot-password', methods=['GET', 'POST'])
