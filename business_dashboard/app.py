@@ -841,9 +841,7 @@ def register():
             
         hashed_password = generate_password_hash(password)
         
-        # Assign 'Admin' to first user, otherwise 'Employee'
-        is_first_user = users_collection.count_documents({}) == 0
-        role = 'Admin' if is_first_user else 'Employee'
+        role = request.form.get('role', 'Admin')
         default_perms = {'dashboard': False, 'create_po': False, 'view_pos': False, 'create_invoice': False, 'inventory': False, 'transport': False, 'delete_data': False, 'view_financials': False}
         
         users_collection.insert_one({
@@ -853,8 +851,12 @@ def register():
             'role': role,
             'permissions': {} if role == 'Admin' else default_perms
         })
-        flash('Employee account created successfully!', 'success')
-        return redirect(url_for('users'))
+        
+        flash(f'{role} account created successfully!', 'success')
+        
+        if session.get('logged_in') and session.get('user_role') == 'Admin':
+            return redirect(url_for('users'))
+        return redirect(url_for('admin_portal'))
     return render_template('register.html')
 
 @app.route('/forgot-password', methods=['GET', 'POST'])
