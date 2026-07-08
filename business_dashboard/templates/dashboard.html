@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - Business Dashboard{% endblock %}
-{% block page_title %}Dashboard{% endblock %}
+{% block title %}{% if session.get('user_role') == 'Admin' %}Admin Dashboard{% else %}Employee Dashboard{% endif %} - Business PO{% endblock %}
+{% block page_title %}{% if session.get('user_role') == 'Admin' %}Admin Dashboard{% else %}Employee Dashboard{% endif %}{% endblock %}
 
 {% block content %}
 <!-- Top Stats -->
