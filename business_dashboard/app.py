@@ -7,6 +7,18 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import smtplib
 from email.mime.text import MIMEText
+from functools import wraps
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect(url_for('login'))
+        if session.get('user_role') != 'Admin':
+            flash('Access denied. Admin privileges required.', 'error')
+            return redirect(url_for('dashboard'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 def send_otp_email(to_email, otp_code):
     # Using the Office 365 credentials provided
@@ -264,6 +276,7 @@ def create_po():
     return render_template('create_po.html', vendors=vendors, po_number=po_number, total_pos=total_pos, total_amount=total_amount, recent_pos=recent_pos)
 
 @app.route('/delete-po/<po_id>', methods=['POST'])
+@admin_required
 def delete_po(po_id):
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -291,6 +304,7 @@ def view_po(po_id):
     return render_template('view_po.html', po=po, vendor=vendor)
 
 @app.route('/delete-po-dashboard/<po_id>')
+@admin_required
 def delete_po_dashboard(po_id):
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -590,6 +604,7 @@ def inventory():
     return render_template('inventory.html', items=items, total=total_items, in_stock=in_stock, low_stock=low_stock, out_stock=out_of_stock)
 
 @app.route('/delete-inventory/<item_id>', methods=['POST'])
+@admin_required
 def delete_inventory(item_id):
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -622,7 +637,38 @@ def add_inventory():
     flash('Item added to inventory successfully!', 'success')
     return redirect(url_for('inventory'))
 
+@app.route('/users')
+@admin_required
+def users():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+    
+    all_users = list(users_collection.find())
+    for u in all_users:
+        u['_id'] = str(u['_id'])
+        
+    return render_template('users.html', users=all_users)
+
+@app.route('/update-role/<user_id>', methods=['POST'])
+@admin_required
+def update_role(user_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+        
+    from bson.objectid import ObjectId
+    new_role = request.form.get('role')
+    
+    # Don't allow an admin to change their own role to Employee to prevent lockouts
+    if user_id == session.get('user_id') and new_role != 'Admin':
+        flash('You cannot demote yourself.', 'error')
+        return redirect(url_for('users'))
+        
+    users_collection.update_one({'_id': ObjectId(user_id)}, {'$set': {'role': new_role}})
+    flash('User role updated successfully!', 'success')
+    return redirect(url_for('users'))
+
 @app.route('/utility')
+@admin_required
 def utility():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -630,6 +676,7 @@ def utility():
     return render_template('settings.html', settings=settings)
 
 @app.route('/update-settings', methods=['POST'])
+@admin_required
 def update_settings():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
@@ -669,10 +716,16 @@ def register():
             return redirect(url_for('register'))
             
         hashed_password = generate_password_hash(password)
+        
+        # Assign 'Admin' to first user, otherwise 'Employee'
+        is_first_user = users_collection.count_documents({}) == 0
+        role = 'Admin' if is_first_user else 'Employee'
+        
         users_collection.insert_one({
             'name': name,
             'email': email,
-            'password': hashed_password
+            'password': hashed_password,
+            'role': role
         })
         flash('Registration successful! Please login.', 'success')
         return redirect(url_for('login'))

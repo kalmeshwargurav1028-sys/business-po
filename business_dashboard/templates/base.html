@@ -58,6 +58,14 @@
                         <li><a href="{{ url_for('inventory') }}" class="{% if request.endpoint == 'inventory' %}active{% endif %}" title="Manage your product catalog and stock levels"><i class="fas fa-warehouse" style="width: 20px;"></i> Stock</a></li>
                     </ul>
                 </li>
+                
+                {% if session.get('user_role') == 'Admin' %}
+                <li>
+                    <a href="{{ url_for('users') }}" class="{% if request.endpoint == 'users' %}active{% endif %}" style="justify-content: space-between;">
+                        <span><i class="fas fa-users" style="width: 20px;"></i> Users</span>
+                    </a>
+                </li>
+                {% endif %}
 
             </ul>
         </aside>
@@ -102,7 +110,9 @@
                                 <span style="display: inline-block; background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 999px; font-size: 0.7rem; font-weight: 600;">{{ session.get('user_role', 'Admin') }}</span>
                             </div>
                             <a href="{{ url_for('profile') }}"><i class="fas fa-user" style="width: 20px; color: #64748b;"></i> My Profile</a>
+                            {% if session.get('user_role') == 'Admin' %}
                             <a href="{{ url_for('utility') }}"><i class="fas fa-cog" style="width: 20px; color: #64748b;"></i> Settings</a>
+                            {% endif %}
                             <a href="{{ url_for('logout') }}" style="color: #ef4444;"><i class="fas fa-sign-out-alt" style="width: 20px;"></i> Logout</a>
                         </div>
                     </div>

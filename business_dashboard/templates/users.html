@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}User Management - Business Dashboard{% endblock %}
+{% block page_title %}User Management{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">All Registered Users</h2>
+    </div>
+    <div class="card-body">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message {{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Current Role</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="background-color: var(--primary-color); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600;">
+                                {% if u.photo %}
+                                    <img src="{{ url_for('static', filename='uploads/profiles/' + u.photo) }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                                {% else %}
+                                    {{ u.name[:2] | upper }}
+                                {% endif %}
+                            </div>
+                            {{ u.name }}
+                        </div>
+                    </td>
+                    <td>{{ u.email }}</td>
+                    <td>{{ u.get('phone', 'N/A') }}</td>
+                    <td>
+                        <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; 
+                            {% if u.get('role', 'Employee') == 'Admin' %}background-color: #e0f2fe; color: #0284c7;
+                            {% else %}background-color: #f1f5f9; color: #475569;{% endif %}">
+                            {{ u.get('role', 'Employee') }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if session.get('user_id') != u._id %}
+                        <form action="{{ url_for('update_role', user_id=u._id) }}" method="POST" style="display: flex; gap: 8px;">
+                            <select name="role" class="form-control" style="width: 120px; padding: 4px 8px;">
+                                <option value="Employee" {% if u.get('role', 'Employee') == 'Employee' %}selected{% endif %}>Employee</option>
+                                <option value="Admin" {% if u.get('role', 'Employee') == 'Admin' %}selected{% endif %}>Admin</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary" style="padding: 4px 12px; font-size: 0.8rem;">Update</button>
+                        </form>
+                        {% else %}
+                        <span style="color: #94a3b8; font-size: 0.8rem; font-style: italic;">Cannot change own role</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 2rem; color: #64748b;">No users found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
