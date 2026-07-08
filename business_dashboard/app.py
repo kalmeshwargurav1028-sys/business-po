@@ -122,18 +122,17 @@ def inject_settings():
         settings_collection.insert_one(settings)
     return dict(global_settings=settings)
 
-@app.route('/', methods=['GET', 'POST'])
-def login():
+def process_login_request(template_name, expected_login_type):
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
-        login_type = request.form.get('login_type', 'employee')
+        login_type = request.form.get('login_type', expected_login_type)
         
         try:
             user = users_collection.find_one({'email': email})
         except Exception as e:
             flash(f"Database Error: {str(e)}", 'error')
-            return redirect(request.referrer or url_for('login'))
+            return redirect(request.url)
         
         if user and check_password_hash(user['password'], password):
             user_role = user.get('role', 'Employee')
@@ -141,11 +140,12 @@ def login():
             # Enforce strict portal separation
             if login_type == 'admin' and user_role != 'Admin':
                 flash('Access denied. Please use the Employee Portal.', 'error')
-                return redirect(url_for('admin_portal'))
+                return redirect(url_for('login'))
                 
             if login_type == 'employee' and user_role == 'Admin':
                 flash('Access denied. Administrators must log in through the Admin Portal.', 'error')
-                return redirect(url_for('login'))
+                return redirect(url_for('admin_portal'))
+                
             otp = str(random.randint(100000, 999999))
             
             session['temp_user'] = {
@@ -169,16 +169,15 @@ def login():
         else:
             flash('Invalid email or password', 'error')
             
-    return render_template('login.html')
+    return render_template(template_name)
+
+@app.route('/', methods=['GET', 'POST'])
+def login():
+    return process_login_request('login.html', 'employee')
 
 @app.route('/admin-portal', methods=['GET', 'POST'])
 def admin_portal():
-    if request.method == 'POST':
-        # The form on admin_login.html posts to /login natively, 
-        # but just in case it posts here, we can redirect or handle it.
-        # It's better if it posts to /login so we don't duplicate login logic.
-        return redirect(url_for('login'), code=307)
-    return render_template('admin_login.html')
+    return process_login_request('admin_login.html', 'admin')
 
 @app.route('/verify-otp', methods=['GET', 'POST'])
 def verify_otp():
