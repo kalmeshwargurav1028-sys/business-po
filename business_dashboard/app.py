@@ -60,9 +60,9 @@ settings_collection = db['settings']
 def inject_settings():
     try:
         settings = settings_collection.find_one({'type': 'global'})
-    except Exception as e:
+    except Exception:
         settings = None
-        return dict(global_settings={'business_name': f"ERROR: {str(e)}", 'email': '', 'phone': '', 'address': '', 'tax_id': '', 'mode': 'business'})
+        return dict(global_settings={'business_name': "Business Dashboard", 'email': '', 'phone': '', 'address': '', 'tax_id': '', 'mode': 'business'})
         
     if not settings:
         settings = {
