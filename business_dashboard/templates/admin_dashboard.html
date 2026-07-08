@@ -160,5 +160,56 @@
     </div>
 </div>
 
+<!-- Employee Audit Trail (Full Width below) -->
+<div class="card" style="margin-top: 2rem;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fas fa-user-shield" style="color: #64748b;"></i>
+            <h3 class="card-title" style="margin: 0;">Employee Audit Trail</h3>
+        </div>
+        <div style="font-size: 0.85rem; color: #64748b; background: #f1f5f9; padding: 0.25rem 0.75rem; border-radius: 9999px;">
+            Security & Compliance
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table" style="margin: 0; width: 100%; text-align: left; border-collapse: collapse;">
+            <thead style="background: #f8fafc;">
+                <tr>
+                    <th style="font-size: 0.75rem; font-weight: 700; color: #64748b; padding: 1rem 1.5rem; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0;">TIMESTAMP</th>
+                    <th style="font-size: 0.75rem; font-weight: 700; color: #64748b; padding: 1rem 1.5rem; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0;">EMPLOYEE</th>
+                    <th style="font-size: 0.75rem; font-weight: 700; color: #64748b; padding: 1rem 1.5rem; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0;">ACTION</th>
+                    <th style="font-size: 0.75rem; font-weight: 700; color: #64748b; padding: 1rem 1.5rem; letter-spacing: 0.05em; border-bottom: 1px solid #e2e8f0;">DETAILS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in recent_employee_logs %}
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 1rem 1.5rem; color: #64748b; font-size: 0.85rem;">
+                        {{ log.timestamp.strftime('%b %d, %Y %I:%M %p') if log.timestamp else 'N/A' }}
+                    </td>
+                    <td style="padding: 1rem 1.5rem; font-weight: 500; color: #1e293b;">
+                        {{ log.user_name }}
+                    </td>
+                    <td style="padding: 1rem 1.5rem;">
+                        <span style="display: inline-block; background: #f1f5f9; color: #334155; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">
+                            {{ log.action }}
+                        </span>
+                    </td>
+                    <td style="padding: 1rem 1.5rem; color: #475569; font-size: 0.9rem;">
+                        {{ log.details }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="text-align: center; color: #94a3b8; padding: 2.5rem; font-style: italic;">
+                        <i class="fas fa-clipboard-list" style="font-size: 2rem; color: #cbd5e1; margin-bottom: 1rem; display: block;"></i>
+                        No recent employee activity recorded.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 
 {% endblock %}

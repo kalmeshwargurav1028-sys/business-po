@@ -240,6 +240,10 @@ def dashboard():
     
     template_name = 'admin_dashboard.html' if session.get('user_role') == 'Admin' else 'employee_dashboard.html'
     
+    recent_employee_logs = []
+    if template_name == 'admin_dashboard.html':
+        recent_employee_logs = list(activity_collection.find({'role': 'Employee'}).sort('timestamp', -1).limit(15))
+    
     return render_template(template_name, 
                            total_inventory=total_inventory, 
                            inventory_value=inventory_value,
@@ -249,7 +253,8 @@ def dashboard():
                            total_pos=total_pos,
                            total_po_value=total_po_value,
                            recent_pos=recent_pos,
-                           total_transport=total_transport)
+                           total_transport=total_transport,
+                           recent_employee_logs=recent_employee_logs)
 
 @app.route('/create-po', methods=['GET', 'POST'])
 @permission_required('create_po')
