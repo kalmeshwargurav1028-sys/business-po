@@ -39,6 +39,19 @@ def permission_required(permission_name):
         return decorated_function
     return decorator
 
+
+def log_activity(action, details=""):
+    if not session.get('user_id'): return
+    activity_collection.insert_one({
+        'user_id': session.get('user_id'),
+        'user_name': session.get('user_name', 'Unknown'),
+        'user_email': session.get('user_email', 'Unknown'),
+        'role': session.get('user_role', 'Employee'),
+        'action': action,
+        'details': details,
+        'timestamp': datetime.datetime.now()
+    })
+
 def send_otp_email(to_email, otp_code):
     # Using the Office 365 credentials provided
     sender_email = "agent4@indusschool.com"
@@ -86,6 +99,7 @@ invoices_collection = db['invoices']
 inventory_collection = db['inventory']
 transport_collection = db['transport']
 settings_collection = db['settings']
+activity_collection = db['activity_logs']
 
 @app.context_processor
 def inject_settings():
@@ -132,7 +146,7 @@ def login():
                 'photo': user.get('photo', ''),
                 'permissions': user.get('permissions', {
                     'dashboard': False, 'create_po': False, 'view_pos': False,
-                    'create_invoice': False, 'inventory': False, 'transport': False, 'delete_data': False
+                    'create_invoice': False, 'inventory': False, 'transport': False, 'delete_data': False, 'view_financials': False
                 })
             }
             session['otp'] = otp
@@ -174,6 +188,7 @@ def verify_otp():
             session['user_phone'] = user_data['phone']
             session['user_photo'] = user_data['photo']
             session['user_permissions'] = user_data.get('permissions', {})
+            log_activity('Logged In', 'User authenticated successfully')
             
             return redirect(url_for('dashboard'))
         else:
@@ -339,7 +354,8 @@ def delete_po_dashboard(po_id):
     from bson.objectid import ObjectId
     try:
         po_collection.delete_one({'_id': ObjectId(po_id)})
-        flash('Purchase Order deleted successfully.', 'success')
+        log_activity('Deleted PO', f'Deleted Purchase Order ID {po_id}')
+    flash('Purchase Order deleted successfully.', 'success')
     except Exception as e:
         flash('Failed to delete Purchase Order.', 'error')
         
@@ -482,7 +498,8 @@ def create_invoice():
         if action == 'draft':
             flash('Invoice saved as draft successfully!', 'success')
         else:
-            flash('Invoice generated successfully!', 'success')
+            log_activity('Created Invoice', f'Generated invoice for {request.form.get("customer_name")}')
+        flash('Invoice generated successfully!', 'success')
             
         return redirect(url_for('create_invoice'))
         
@@ -669,6 +686,7 @@ def add_inventory():
         'reorder_level': reorder_level,
         'unit_price': unit_price
     })
+    log_activity('Added Inventory', f'Added item {name} (SKU: {sku})')
     flash('Item added to inventory successfully!', 'success')
     return redirect(url_for('inventory'))
 
@@ -718,12 +736,22 @@ def update_permissions(user_id):
         'create_invoice': request.form.get('create_invoice') == 'on',
         'inventory': request.form.get('inventory') == 'on',
         'transport': request.form.get('transport') == 'on',
-        'delete_data': request.form.get('delete_data') == 'on'
+        'delete_data': request.form.get('delete_data') == 'on',
+        'view_financials': request.form.get('view_financials') == 'on'
     }
     
     users_collection.update_one({'_id': ObjectId(user_id)}, {'$set': {'permissions': new_perms}})
     flash('User permissions updated successfully!', 'success')
     return redirect(url_for('users'))
+
+@app.route('/activity')
+@admin_required
+def activity():
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+        
+    logs = list(activity_collection.find().sort('timestamp', -1).limit(200))
+    return render_template('activity.html', logs=logs)
 
 @app.route('/utility')
 @admin_required
@@ -778,7 +806,7 @@ def register():
         # Assign 'Admin' to first user, otherwise 'Employee'
         is_first_user = users_collection.count_documents({}) == 0
         role = 'Admin' if is_first_user else 'Employee'
-        default_perms = {'dashboard': False, 'create_po': False, 'view_pos': False, 'create_invoice': False, 'inventory': False, 'transport': False, 'delete_data': False}
+        default_perms = {'dashboard': False, 'create_po': False, 'view_pos': False, 'create_invoice': False, 'inventory': False, 'transport': False, 'delete_data': False, 'view_financials': False}
         
         users_collection.insert_one({
             'name': name,

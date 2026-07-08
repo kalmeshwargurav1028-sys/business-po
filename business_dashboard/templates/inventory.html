@@ -226,8 +226,8 @@
                     </div>
                 </td>
                 <td style="color: #475569;">{{ item.reorder_level }}</td>
-                <td style="color: #475569;">₹{{ "%.2f"|format(item.unit_price|float) }}</td>
-                <td style="color: #475569;">₹{{ "%.2f"|format(item.stock_value|float) }}</td>
+                <td style="color: #475569;">{% if session.get("user_role") == "Admin" or session.get("user_permissions", {}).get("view_financials") %}₹{{ "%.2f"|format(item.unit_price|float) }}{% else %}***{% endif %}</td>
+                <td style="color: #475569;">{% if session.get("user_role") == "Admin" or session.get("user_permissions", {}).get("view_financials") %}₹{{ "%.2f"|format(item.stock_value|float) }}{% else %}***{% endif %}</td>
                 <td>
                     <span class="badge 
                         {% if item.status == 'In Stock' %}badge-in-stock

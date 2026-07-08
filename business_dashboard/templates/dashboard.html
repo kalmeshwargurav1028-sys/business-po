@@ -13,13 +13,13 @@
     </div>
     <div class="stat-card">
         <div class="stat-title">Inventory Value</div>
-        <div class="stat-value">₹{{ "%.2f"|format(inventory_value|float) }}</div>
+        {% if session.get("user_role") == "Admin" or session.get("user_permissions", {}).get("view_financials") %}<div class="stat-value">₹{{ "%.2f"|format(inventory_value|float) }}</div>{% else %}<div class="stat-value">***</div>{% endif %}
         <div class="stat-subtitle">Based on quantity x price</div>
     </div>
     <div class="stat-card">
         <div class="stat-title">Purchase Orders</div>
         <div class="stat-value">{{ total_pos }}</div>
-        <div class="stat-subtitle">Total PO Value: ₹{{ "%.2f"|format(total_po_value|float) }}</div>
+        <div class="stat-subtitle">{% if session.get("user_role") == "Admin" or session.get("user_permissions", {}).get("view_financials") %}Total PO Value: ₹{{ "%.2f"|format(total_po_value|float) }}{% else %}Total PO Value: ***{% endif %}</div>
     </div>
     <div class="stat-card">
         <div class="stat-title">Vendor Accounts</div>

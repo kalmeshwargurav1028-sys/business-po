@@ -29,6 +29,9 @@
                     <input type="checkbox" name="transport" id="perm_transport"> Manage Transport
                 </label>
                 <hr style="border: 0; border-top: 1px solid #e2e8f0; width: 100%;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="view_financials" id="perm_view_financials"> <strong>View Financial Amounts</strong>
+                </label>
                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #ef4444; font-weight: 600;">
                     <input type="checkbox" name="delete_data" id="perm_delete_data"> Allow Deleting Data (DANGER)
                 </label>
@@ -54,6 +57,7 @@ function openPermModal(userId, userName, permissions) {
     document.getElementById('perm_inventory').checked = permissions.inventory || false;
     document.getElementById('perm_transport').checked = permissions.transport || false;
     document.getElementById('perm_delete_data').checked = permissions.delete_data || false;
+    document.getElementById('perm_view_financials').checked = permissions.view_financials || false;
     
     document.getElementById('permModal').style.display = 'block';
 }
@@ -89,6 +93,9 @@ function openPermModal(userId, userName, permissions) {
                     <input type="checkbox" name="transport" id="perm_transport"> Manage Transport
                 </label>
                 <hr style="border: 0; border-top: 1px solid #e2e8f0; width: 100%;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="view_financials" id="perm_view_financials"> <strong>View Financial Amounts</strong>
+                </label>
                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #ef4444; font-weight: 600;">
                     <input type="checkbox" name="delete_data" id="perm_delete_data"> Allow Deleting Data (DANGER)
                 </label>
@@ -114,6 +121,7 @@ function openPermModal(userId, userName, permissions) {
     document.getElementById('perm_inventory').checked = permissions.inventory || false;
     document.getElementById('perm_transport').checked = permissions.transport || false;
     document.getElementById('perm_delete_data').checked = permissions.delete_data || false;
+    document.getElementById('perm_view_financials').checked = permissions.view_financials || false;
     
     document.getElementById('permModal').style.display = 'block';
 }
@@ -226,6 +234,9 @@ function openPermModal(userId, userName, permissions) {
                     <input type="checkbox" name="transport" id="perm_transport"> Manage Transport
                 </label>
                 <hr style="border: 0; border-top: 1px solid #e2e8f0; width: 100%;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="checkbox" name="view_financials" id="perm_view_financials"> <strong>View Financial Amounts</strong>
+                </label>
                 <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: #ef4444; font-weight: 600;">
                     <input type="checkbox" name="delete_data" id="perm_delete_data"> Allow Deleting Data (DANGER)
                 </label>
@@ -251,6 +262,7 @@ function openPermModal(userId, userName, permissions) {
     document.getElementById('perm_inventory').checked = permissions.inventory || false;
     document.getElementById('perm_transport').checked = permissions.transport || false;
     document.getElementById('perm_delete_data').checked = permissions.delete_data || false;
+    document.getElementById('perm_view_financials').checked = permissions.view_financials || false;
     
     document.getElementById('permModal').style.display = 'block';
 }

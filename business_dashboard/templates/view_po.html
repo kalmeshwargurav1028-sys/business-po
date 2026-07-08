@@ -233,6 +233,7 @@
             </tbody>
         </table>
         
+        {% if session.get("user_role") == "Admin" or session.get("user_permissions", {}).get("view_financials") %}
         <div class="totals">
             <div class="total-row">
                 <span>Subtotal</span>
@@ -244,6 +245,7 @@
             </div>
         </div>
         
+        {% endif %}
         <div class="notes">
             <h4>Notes / Instructions</h4>
             <p>{{ po.get('notes') if po.get('notes') else 'Please confirm receipt of this purchase order. All goods must be delivered by the expected delivery date.' }}</p>
