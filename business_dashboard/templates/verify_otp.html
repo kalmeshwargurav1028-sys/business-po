@@ -174,7 +174,7 @@
                 <button type="submit" class="btn-submit">Verify Code</button>
                 
                 <div class="forgot-password">
-                    <a href="{{ url_for('login') }}">Back to Login</a>
+                    <a href="{% if session.get('login_type') == 'admin' %}{{ url_for('admin_portal') }}{% else %}{{ url_for('login') }}{% endif %}">Back to Login</a>
                 </div>
             </form>
         </div>

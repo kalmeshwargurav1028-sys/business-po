@@ -157,13 +157,12 @@ def process_login_request(template_name, expected_login_type):
                 'email': user.get('email', ''),
                 'role': user.get('role', 'Admin'),
                 'phone': user.get('phone', ''),
-                'photo': user.get('photo', ''),
-                'photo_base64': user.get('photo_base64', ''),
                 'permissions': user.get('permissions', {
                     'dashboard': False, 'create_po': False, 'view_pos': False,
                     'create_invoice': False, 'inventory': False, 'transport': False, 'delete_data': False, 'view_financials': False
                 })
             }
+            session['login_type'] = login_type
             session['otp'] = otp
             session['otp_expiry'] = (datetime.datetime.now() + datetime.timedelta(minutes=10)).timestamp()
             
@@ -184,8 +183,11 @@ def admin_portal():
 
 @app.route('/verify-otp', methods=['GET', 'POST'])
 def verify_otp():
+    login_type = session.get('login_type', 'employee')
+    fallback_route = 'admin_portal' if login_type == 'admin' else 'login'
+
     if 'temp_user' not in session or 'otp' not in session:
-        return redirect(url_for('login'))
+        return redirect(url_for(fallback_route))
         
     if request.method == 'POST':
         entered_otp = request.form.get('otp')
@@ -196,12 +198,18 @@ def verify_otp():
             session.pop('temp_user', None)
             session.pop('otp', None)
             session.pop('otp_expiry', None)
-            return redirect(url_for('login'))
+            session.pop('login_type', None)
+            return redirect(url_for(fallback_route))
             
         if entered_otp == session.get('otp'):
             user_data = session.pop('temp_user')
             session.pop('otp', None)
             session.pop('otp_expiry', None)
+            session.pop('login_type', None)
+            
+            # Fetch full user from DB to get photo (avoiding large session cookie)
+            from bson.objectid import ObjectId
+            db_user = users_collection.find_one({'_id': ObjectId(user_data['id'])})
             
             session['logged_in'] = True
             session['user_id'] = user_data['id']
@@ -209,8 +217,9 @@ def verify_otp():
             session['user_email'] = user_data['email']
             session['user_role'] = user_data['role']
             session['user_phone'] = user_data['phone']
-            session['user_photo'] = user_data.get('photo', '')
-            session['user_photo_base64'] = user_data.get('photo_base64', '')
+            if db_user:
+                session['user_photo'] = db_user.get('photo', '')
+                session['user_photo_base64'] = db_user.get('photo_base64', '')
             session['user_permissions'] = user_data.get('permissions', {})
             log_activity('Logged In', 'User authenticated successfully')
             
