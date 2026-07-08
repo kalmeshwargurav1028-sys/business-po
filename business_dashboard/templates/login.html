@@ -279,6 +279,7 @@
             {% endwith %}
 
             <form method="POST" action="{{ url_for('login') }}">
+                <input type="hidden" name="login_type" value="employee">
                 <div class="form-group">
                     <label for="email" class="form-label">Email</label>
                     <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" required>

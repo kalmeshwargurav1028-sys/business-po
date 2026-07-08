@@ -127,14 +127,25 @@ def login():
     if request.method == 'POST':
         email = request.form.get('email')
         password = request.form.get('password')
+        login_type = request.form.get('login_type', 'employee')
         
         try:
             user = users_collection.find_one({'email': email})
         except Exception as e:
             flash(f"Database Error: {str(e)}", 'error')
-            return redirect(url_for('login'))
+            return redirect(request.referrer or url_for('login'))
         
         if user and check_password_hash(user['password'], password):
+            user_role = user.get('role', 'Employee')
+            
+            # Enforce strict portal separation
+            if login_type == 'admin' and user_role != 'Admin':
+                flash('Access denied. Please use the Employee Portal.', 'error')
+                return redirect(url_for('admin_portal'))
+                
+            if login_type == 'employee' and user_role == 'Admin':
+                flash('Access denied. Administrators must log in through the Admin Portal.', 'error')
+                return redirect(url_for('login'))
             otp = str(random.randint(100000, 999999))
             
             session['temp_user'] = {
