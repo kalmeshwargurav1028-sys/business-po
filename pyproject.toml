@@ -1,2 +1,0 @@
-[tool.vercel]
-entrypoint = "business_dashboard.app:app"
