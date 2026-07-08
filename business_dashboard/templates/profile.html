@@ -4,9 +4,11 @@
 {% block page_title %}My Profile{% endblock %}
 
 {% block content %}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <style>
     .profile-container {
-        max-width: 800px;
+        max-width: 650px;
         margin: 0 auto;
     }
     .profile-card {
@@ -109,6 +111,77 @@
     .file-input-wrapper input[type=file]::file-selector-button:hover {
         background: #e2e8f0;
     }
+    
+    /* Input Group for Country Code */
+    .input-group {
+        display: flex;
+        align-items: center;
+    }
+    .input-group-text {
+        padding: 0.75rem 1rem;
+        background-color: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        border-right: none;
+        border-top-left-radius: 4px;
+        border-bottom-left-radius: 4px;
+        color: #475569;
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+    .input-group .form-control {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    
+    /* Cropper Modal */
+    .cropper-modal {
+        position: fixed;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(15, 23, 42, 0.75);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+    }
+    .cropper-modal.active {
+        display: flex;
+    }
+    .cropper-content {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    .cropper-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .cropper-header h3 {
+        margin: 0;
+        color: #1e293b;
+        font-size: 1.2rem;
+    }
+    .cropper-wrapper-inner {
+        width: 100%;
+        height: 300px;
+        background: #f1f5f9;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    .cropper-wrapper-inner img {
+        max-width: 100%;
+    }
+    .cropper-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
 </style>
 
 <div class="profile-container">
@@ -158,7 +231,10 @@
                 <div class="grid-2">
                     <div class="form-group">
                         <label class="form-label">Phone Number</label>
-                        <input type="text" class="form-control" name="phone" value="{{ user.get('phone', '') }}" placeholder="Enter your phone number">
+                        <div class="input-group">
+                            <span class="input-group-text">+91</span>
+                            <input type="text" class="form-control" name="phone" value="{{ user.get('phone', '')|replace('+91', '') }}" placeholder="Enter phone number">
+                        </div>
                     </div>
                     
                     <div class="form-group">
@@ -170,16 +246,128 @@
                 <div class="form-group" style="border-top: 1px solid #e2e8f0; padding-top: 1.5rem; margin-top: 1.5rem;">
                     <label class="form-label">Update Profile Photo</label>
                     <div class="file-input-wrapper">
-                        <input type="file" name="photo" accept="image/*">
+                        <input type="file" name="photo" id="photoInput" accept="image/*">
                     </div>
                     <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem;">Recommended size: 200x200px. Max size: 2MB.</p>
                 </div>
 
                 <div style="text-align: right; margin-top: 2rem;">
-                    <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2.5rem; font-size: 1rem; border-radius: 4px; box-shadow: 0 4px 6px rgba(37,99,235,0.2);">Update Profile</button>
+                    <button type="submit" id="submitProfileForm" class="btn btn-primary" style="padding: 0.75rem 2.5rem; font-size: 1rem; border-radius: 4px; box-shadow: 0 4px 6px rgba(37,99,235,0.2);">Update Profile</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<!-- Cropper Modal -->
+<div class="cropper-modal" id="cropperModal">
+    <div class="cropper-content">
+        <div class="cropper-header">
+            <h3>Adjust Profile Photo</h3>
+            <button type="button" id="cancelCrop" style="background: none; border: none; font-size: 1.25rem; color: #64748b; cursor: pointer;">&times;</button>
+        </div>
+        <div class="cropper-wrapper-inner">
+            <img id="imageToCrop" src="" alt="Image to crop">
+        </div>
+        <div class="cropper-footer">
+            <button type="button" id="cancelCropBtn" class="btn" style="background: #f1f5f9; color: #475569; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; cursor: pointer;">Cancel</button>
+            <button type="button" id="applyCropBtn" class="btn btn-primary" style="background: #2563eb; color: white; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; cursor: pointer;">Apply Crop</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const photoInput = document.getElementById('photoInput');
+        const cropperModal = document.getElementById('cropperModal');
+        const imageToCrop = document.getElementById('imageToCrop');
+        const cancelCrop = document.getElementById('cancelCrop');
+        const cancelCropBtn = document.getElementById('cancelCropBtn');
+        const applyCropBtn = document.getElementById('applyCropBtn');
+        const profileAvatarImg = document.querySelector('.profile-avatar-wrapper img');
+        
+        let cropper = null;
+        let croppedFile = null;
+
+        // When user selects a file
+        photoInput.addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files && files.length > 0) {
+                const file = files[0];
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    imageToCrop.src = event.target.result;
+                    cropperModal.classList.add('active');
+                    
+                    // Initialize cropper after image is loaded
+                    if (cropper) { cropper.destroy(); }
+                    cropper = new Cropper(imageToCrop, {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                        dragMode: 'move',
+                        autoCropArea: 0.9,
+                        restore: false,
+                        guides: true,
+                        center: true,
+                        highlight: false,
+                        cropBoxMovable: true,
+                        cropBoxResizable: true,
+                        toggleDragModeOnDblclick: false,
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function closeModal() {
+            cropperModal.classList.remove('active');
+            if (cropper) {
+                cropper.destroy();
+                cropper = null;
+            }
+            // If they cancelled and didn't apply a crop, we should probably clear the input
+            // But if they just wanted to cancel the crop view, we can leave it.
+            // Best practice is to clear it if they cancel, so they have to try again.
+            if (!croppedFile) {
+                photoInput.value = '';
+            }
+        }
+
+        cancelCrop.addEventListener('click', closeModal);
+        cancelCropBtn.addEventListener('click', closeModal);
+
+        // Apply Crop
+        applyCropBtn.addEventListener('click', function() {
+            if (cropper) {
+                const canvas = cropper.getCroppedCanvas({
+                    width: 400,
+                    height: 400,
+                });
+                
+                canvas.toBlob(function(blob) {
+                    // Create a new File object from the blob
+                    const originalName = photoInput.files[0].name;
+                    croppedFile = new File([blob], "cropped_" + originalName, { type: 'image/jpeg' });
+                    
+                    // Update preview immediately
+                    const url = URL.createObjectURL(blob);
+                    if (profileAvatarImg) {
+                        profileAvatarImg.src = url;
+                    } else {
+                        // If there was no previous image (initials were showing)
+                        const wrapper = document.querySelector('.profile-avatar-wrapper');
+                        wrapper.innerHTML = `<img src="${url}" alt="Profile Photo">`;
+                    }
+                    
+                    // Overwrite the file input using DataTransfer
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(croppedFile);
+                    photoInput.files = dataTransfer.files;
+                    
+                    closeModal();
+                }, 'image/jpeg', 0.9);
+            }
+        });
+    });
+</script>
 {% endblock %}
