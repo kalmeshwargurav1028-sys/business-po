@@ -152,11 +152,11 @@
     }
     .cropper-content {
         background: white;
-        padding: 1.5rem;
-        border-radius: 12px;
+        padding: 2rem;
+        border-radius: 16px;
         width: 90%;
-        max-width: 500px;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        max-width: 600px;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
     }
     .cropper-header {
         display: flex;
@@ -171,18 +171,14 @@
     }
     .cropper-wrapper-inner {
         width: 100%;
-        max-height: 400px;
+        height: 400px; /* Fixed height for cropper */
         background: #e2e8f0;
         border-radius: 8px;
         overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
     .cropper-wrapper-inner img {
         display: block;
         max-width: 100%;
-        max-height: 400px;
     }
     .cropper-footer {
         display: flex;
