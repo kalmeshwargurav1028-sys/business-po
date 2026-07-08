@@ -5,50 +5,50 @@
 
 {% block content %}
 <div class="card">
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-        <h2 class="card-title">Employee Audit Trail</h2>
-        <span style="font-size: 0.85rem; color: #64748b;">Showing last 200 actions</span>
+    <div class="card-header" style="padding: 1.5rem 2rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+        <h2 class="card-title" style="margin-bottom: 0.25rem;">Activity Feed</h2>
+        <p style="font-size: 0.85rem; color: #64748b; margin: 0;">A simple timeline of the last 200 actions across the dashboard.</p>
     </div>
-    <div class="card-body" style="padding: 0;">
-        <table class="inv-table" style="width: 100%; border-collapse: collapse;">
-            <thead>
-                <tr style="background: #f8fafc;">
-                    <th style="padding: 1rem; border-bottom: 1px solid #e2e8f0; color: #64748b; font-size: 0.75rem; text-transform: uppercase;">Time</th>
-                    <th style="padding: 1rem; border-bottom: 1px solid #e2e8f0; color: #64748b; font-size: 0.75rem; text-transform: uppercase;">User</th>
-                    <th style="padding: 1rem; border-bottom: 1px solid #e2e8f0; color: #64748b; font-size: 0.75rem; text-transform: uppercase;">Action</th>
-                    <th style="padding: 1rem; border-bottom: 1px solid #e2e8f0; color: #64748b; font-size: 0.75rem; text-transform: uppercase;">Details</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for log in logs %}
-                <tr style="border-bottom: 1px solid #f1f5f9;">
-                    <td style="padding: 1rem; font-size: 0.85rem; color: #64748b; width: 15%;">
-                        {{ log.timestamp.strftime('%Y-%m-%d %H:%M') }}
-                    </td>
-                    <td style="padding: 1rem; width: 25%;">
-                        <div style="font-weight: 600; color: #1e293b; font-size: 0.9rem;">{{ log.user_name }}</div>
-                        <div style="font-size: 0.8rem; color: #94a3b8;">{{ log.user_email }}</div>
-                    </td>
-                    <td style="padding: 1rem; width: 20%;">
-                        <span style="display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; 
+    <div class="card-body" style="padding: 2rem;">
+        <div style="position: relative;">
+            {% for log in logs %}
+            <div style="display: flex; gap: 1.5rem; margin-bottom: 1.5rem; position: relative;">
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div style="width: 2.5rem; height: 2.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1rem; color: #fff; background: 
+                        {% if 'Delete' in log.action %}#ef4444
+                        {% elif 'Create' in log.action or 'Add' in log.action %}#10b981
+                        {% else %}#3b82f6{% endif %};">
+                        {{ log.user_name[:1] | upper }}
+                    </div>
+                    {% if not loop.last %}
+                    <div style="width: 2px; height: 100%; background: #e2e8f0; margin-top: 0.5rem; flex-grow: 1;"></div>
+                    {% endif %}
+                </div>
+                <div style="flex-grow: 1; padding-bottom: {% if loop.last %}0{% else %}1.5rem{% endif %};">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.25rem;">
+                        <div>
+                            <span style="font-weight: 600; color: #1e293b; font-size: 0.95rem;">{{ log.user_name }}</span>
+                            <span style="color: #64748b; font-size: 0.85rem;">({{ log.user_email }})</span>
+                        </div>
+                        <span style="font-size: 0.75rem; color: #94a3b8;">{{ log.timestamp.strftime('%b %d, %Y at %I:%M %p') }}</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem;">
+                        <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; 
                             {% if 'Delete' in log.action %}background: #fee2e2; color: #b91c1c;
-                            {% elif 'Create' in log.action %}background: #dcfce3; color: #166534;
-                            {% elif 'Add' in log.action %}background: #dcfce3; color: #166534;
+                            {% elif 'Create' in log.action or 'Add' in log.action %}background: #dcfce3; color: #166534;
                             {% else %}background: #e0f2fe; color: #0284c7;{% endif %}">
                             {{ log.action }}
                         </span>
-                    </td>
-                    <td style="padding: 1rem; font-size: 0.9rem; color: #475569;">
-                        {{ log.details }}
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="4" style="text-align: center; padding: 3rem; color: #64748b;">No activity recorded yet.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                        <span style="font-size: 0.9rem; color: #475569;">{{ log.details }}</span>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div style="text-align: center; padding: 3rem; color: #64748b; font-size: 0.95rem;">
+                No recent activity has been recorded yet.
+            </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
 {% endblock %}
