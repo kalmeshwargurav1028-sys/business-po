@@ -161,4 +161,84 @@
         </table>
     </div>
 </div>
+
+{% if session.get('user_role') == 'Admin' %}
+<!-- Role Permissions Section -->
+<div class="card" style="margin-top: 2rem; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start; padding: 1.5rem;">
+        <div>
+            <h3 class="card-title" style="margin: 0; font-size: 1.25rem; font-weight: 700; color: #1e293b;">Role Permissions</h3>
+            <p style="margin: 0.5rem 0 0 0; color: #64748b; font-size: 0.95rem;">Define and control system access levels for different user groups.</p>
+        </div>
+        <button class="btn" style="background-color: #eff6ff; color: #3b82f6; border: none; font-weight: 600; padding: 0.6rem 1.2rem; border-radius: 6px; cursor: pointer;">Add Custom Role</button>
+    </div>
+    <div class="table-responsive">
+        <table class="table" style="margin-bottom: 0; width: 100%; border-collapse: collapse;">
+            <thead style="background: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+                <tr>
+                    <th style="font-size: 0.75rem; font-weight: 700; color: #64748b; padding: 1rem 1.5rem; text-align: left; letter-spacing: 0.05em;">FEATURE MODULE</th>
+                    <th style="font-size: 0.75rem; font-weight: 700; color: #64748b; padding: 1rem 1.5rem; text-align: center; letter-spacing: 0.05em;">ADMIN</th>
+                    <th style="font-size: 0.75rem; font-weight: 700; color: #64748b; padding: 1rem 1.5rem; text-align: center; letter-spacing: 0.05em;">MANAGER</th>
+                    <th style="font-size: 0.75rem; font-weight: 700; color: #64748b; padding: 1rem 1.5rem; text-align: center; letter-spacing: 0.05em;">EMPLOYEE</th>
+                    <th style="font-size: 0.75rem; font-weight: 700; color: #64748b; padding: 1rem 1.5rem; text-align: center; letter-spacing: 0.05em;">VENDOR <i class="fas fa-trash" style="color: #ef4444; margin-left: 4px;"></i></th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 1rem 1.5rem; font-weight: 500; color: #1e293b;">View Dashboard</td>
+                    <td style="text-align: center;"><input type="checkbox" checked disabled style="accent-color: #cbd5e1; width: 18px; height: 18px; cursor: not-allowed; opacity: 0.6;"></td>
+                    <td style="text-align: center;"><input type="checkbox" checked style="accent-color: #ea580c; width: 18px; height: 18px; cursor: pointer;"></td>
+                    <td style="text-align: center;"><input type="checkbox" checked style="accent-color: #ea580c; width: 18px; height: 18px; cursor: pointer;"></td>
+                    <td style="text-align: center;"><input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;"></td>
+                </tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 1rem 1.5rem; font-weight: 500; color: #1e293b;">Create Purchase Orders</td>
+                    <td style="text-align: center;"><input type="checkbox" checked disabled style="accent-color: #cbd5e1; width: 18px; height: 18px; cursor: not-allowed; opacity: 0.6;"></td>
+                    <td style="text-align: center;"><input type="checkbox" checked style="accent-color: #ea580c; width: 18px; height: 18px; cursor: pointer;"></td>
+                    <td style="text-align: center;"><input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;"></td>
+                    <td style="text-align: center;"><input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;"></td>
+                </tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 1rem 1.5rem; font-weight: 500; color: #1e293b;">Manage Inventory</td>
+                    <td style="text-align: center;"><input type="checkbox" checked disabled style="accent-color: #cbd5e1; width: 18px; height: 18px; cursor: not-allowed; opacity: 0.6;"></td>
+                    <td style="text-align: center;"><input type="checkbox" checked style="accent-color: #ea580c; width: 18px; height: 18px; cursor: pointer;"></td>
+                    <td style="text-align: center;"><input type="checkbox" checked style="accent-color: #ea580c; width: 18px; height: 18px; cursor: pointer;"></td>
+                    <td style="text-align: center;"><input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;"></td>
+                </tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 1rem 1.5rem; font-weight: 500; color: #1e293b;">Create Invoices</td>
+                    <td style="text-align: center;"><input type="checkbox" checked disabled style="accent-color: #cbd5e1; width: 18px; height: 18px; cursor: not-allowed; opacity: 0.6;"></td>
+                    <td style="text-align: center;"><input type="checkbox" checked style="accent-color: #ea580c; width: 18px; height: 18px; cursor: pointer;"></td>
+                    <td style="text-align: center;"><input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;"></td>
+                    <td style="text-align: center;"><input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;"></td>
+                </tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 1rem 1.5rem; font-weight: 500; color: #1e293b;">Manage Transport</td>
+                    <td style="text-align: center;"><input type="checkbox" checked disabled style="accent-color: #cbd5e1; width: 18px; height: 18px; cursor: not-allowed; opacity: 0.6;"></td>
+                    <td style="text-align: center;"><input type="checkbox" checked style="accent-color: #ea580c; width: 18px; height: 18px; cursor: pointer;"></td>
+                    <td style="text-align: center;"><input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;"></td>
+                    <td style="text-align: center;"><input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;"></td>
+                </tr>
+                <tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 1rem 1.5rem; font-weight: 500; color: #1e293b;">View Financials</td>
+                    <td style="text-align: center;"><input type="checkbox" checked disabled style="accent-color: #cbd5e1; width: 18px; height: 18px; cursor: not-allowed; opacity: 0.6;"></td>
+                    <td style="text-align: center;"><input type="checkbox" checked style="accent-color: #ea580c; width: 18px; height: 18px; cursor: pointer;"></td>
+                    <td style="text-align: center;"><input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;"></td>
+                    <td style="text-align: center;"><input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;"></td>
+                </tr>
+                <tr>
+                    <td style="padding: 1rem 1.5rem; font-weight: 500; color: #1e293b;">Delete Data <i class="fas fa-exclamation-triangle text-danger" style="margin-left: 4px; font-size: 0.8rem;"></i></td>
+                    <td style="text-align: center;"><input type="checkbox" checked disabled style="accent-color: #cbd5e1; width: 18px; height: 18px; cursor: not-allowed; opacity: 0.6;"></td>
+                    <td style="text-align: center;"><input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;"></td>
+                    <td style="text-align: center;"><input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;"></td>
+                    <td style="text-align: center;"><input type="checkbox" style="width: 18px; height: 18px; cursor: pointer;"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer" style="text-align: right; background: #f8fafc; padding: 1rem 1.5rem; border-top: 1px solid #e2e8f0; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;">
+        <button class="btn btn-primary" style="background-color: #4f46e5; color: white; border: none; padding: 0.6rem 1.5rem; font-weight: 600; border-radius: 6px; cursor: pointer;">Save Changes</button>
+    </div>
+</div>
+{% endif %}
 {% endblock %}

@@ -143,20 +143,21 @@ function openPermModal(userId, userName, permissions) {
             {% endif %}
         {% endwith %}
 
-        <table class="data-table">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Current Role</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for u in users %}
-                <tr>
-                    <td>
+        <div style="background: white; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); overflow: hidden;">
+            <table class="table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                <thead style="background-color: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                    <tr>
+                        <th style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.05em;">Name</th>
+                        <th style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.05em;">Email</th>
+                        <th style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.05em;">Phone</th>
+                        <th style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.05em;">Current Role</th>
+                        <th style="padding: 1rem 1.5rem; font-size: 0.85rem; font-weight: 600; color: #475569; text-transform: uppercase; letter-spacing: 0.05em;">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr style="border-bottom: 1px solid #e2e8f0; transition: background-color 0.2s;" onmouseover="this.style.backgroundColor='#f1f5f9'" onmouseout="this.style.backgroundColor='transparent'">
+                        <td style="padding: 1rem 1.5rem;">
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <div style="background-color: var(--primary-color); color: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600;">
                                 {% if u.photo %}
@@ -168,27 +169,27 @@ function openPermModal(userId, userName, permissions) {
                             {{ u.name }}
                         </div>
                     </td>
-                    <td>{{ u.email }}</td>
-                    <td>{{ u.get('phone', 'N/A') }}</td>
-                    <td>
+                    <td style="padding: 1rem 1.5rem;">{{ u.email }}</td>
+                    <td style="padding: 1rem 1.5rem;">{{ u.get('phone', 'N/A') }}</td>
+                    <td style="padding: 1rem 1.5rem;">
                         <span style="display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; 
                             {% if u.get('role', 'Employee') == 'Admin' %}background-color: #e0f2fe; color: #0284c7;
                             {% else %}background-color: #f1f5f9; color: #475569;{% endif %}">
                             {{ u.get('role', 'Employee') }}
                         </span>
                     </td>
-                    <td>
+                    <td style="padding: 1rem 1.5rem;">
                         {% if session.get('user_id') != u._id %}
                         <div style="display: flex; gap: 8px;">
                             <form action="{{ url_for('update_role', user_id=u._id) }}" method="POST" style="display: flex; gap: 8px;">
-                                <select name="role" class="form-control" style="width: 120px; padding: 4px 8px;">
+                                <select name="role" class="form-control" style="width: 120px; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
                                     <option value="Employee" {% if u.get('role', 'Employee') == 'Employee' %}selected{% endif %}>Employee</option>
                                     <option value="Admin" {% if u.get('role', 'Employee') == 'Admin' %}selected{% endif %}>Admin</option>
                                 </select>
-                                <button type="submit" class="btn btn-primary" style="padding: 4px 12px; font-size: 0.8rem;">Role</button>
+                                <button type="submit" class="btn btn-primary" style="padding: 4px 12px; font-size: 0.8rem; background-color: #3b82f6; border-color: #3b82f6; color: white; border-radius: 4px;">Role</button>
                             </form>
                             {% if u.get('role', 'Employee') == 'Employee' %}
-                            <button type="button" class="btn" style="padding: 4px 12px; font-size: 0.8rem; background: white; border: 1px solid #cbd5e1; cursor: pointer;" onclick='openPermModal("{{ u._id }}", "{{ u.name }}", {{ u.get("permissions", {}) | tojson }})'>Permissions</button>
+                            <button type="button" class="btn" style="padding: 4px 12px; font-size: 0.8rem; background: white; border: 1px solid #cbd5e1; cursor: pointer; border-radius: 4px; color: #475569;" onclick='openPermModal("{{ u._id }}", "{{ u.name }}", {{ u.get("permissions", {}) | tojson }})'>Permissions</button>
                             {% endif %}
                         </div>
                         {% else %}
@@ -198,11 +199,12 @@ function openPermModal(userId, userName, permissions) {
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="5" style="text-align: center; padding: 2rem; color: #64748b;">No users found.</td>
+                    <td colspan="5" style="text-align: center; padding: 3rem; color: #64748b; font-style: italic;">No users found.</td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 
