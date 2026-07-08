@@ -10,6 +10,7 @@ from email.mime.text import MIMEText
 from functools import wraps
 
 def admin_required(f):
+    # Decorator to enforce admin role
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not session.get('logged_in'):
