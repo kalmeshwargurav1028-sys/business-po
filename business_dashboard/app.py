@@ -11,6 +11,7 @@ from functools import wraps
 
 def admin_required(f):
     # Decorator to enforce admin role
+    # Trigger final Vercel deployment
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if not session.get('logged_in'):
