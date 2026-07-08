@@ -238,7 +238,9 @@ def dashboard():
     recent_pos = pos[:5]
     total_transport = transport_collection.count_documents({})
     
-    return render_template('dashboard.html', 
+    template_name = 'admin_dashboard.html' if session.get('user_role') == 'Admin' else 'employee_dashboard.html'
+    
+    return render_template(template_name, 
                            total_inventory=total_inventory, 
                            inventory_value=inventory_value,
                            low_stock=low_stock,
