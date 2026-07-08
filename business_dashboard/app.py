@@ -364,7 +364,7 @@ def delete_po_dashboard(po_id):
     try:
         po_collection.delete_one({'_id': ObjectId(po_id)})
         log_activity('Deleted PO', f'Deleted Purchase Order ID {po_id}')
-    flash('Purchase Order deleted successfully.', 'success')
+        flash('Purchase Order deleted successfully.', 'success')
     except Exception as e:
         flash('Failed to delete Purchase Order.', 'error')
         
