@@ -268,11 +268,6 @@
                 <h3 class="login-title">Log In</h3>
             </div>
 
-            <div class="tabs">
-                <div class="tab active">Employee Portal</div>
-                <div class="tab" style="cursor: pointer; color: #94a3b8;" onclick="window.location.href='{{ url_for('admin_portal') }}'">Admin</div>
-            </div>
-
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -302,7 +297,6 @@
                 <div class="bottom-links">
                     <a href="{{ url_for('forgot_password') }}"><i class="fas fa-key"></i> Forgot Password</a>
                     <a href="#" class="need-help"><i class="far fa-question-circle"></i> Need help?</a>
-                    <a href="{{ url_for('register') }}" class="create-account">Create New Account</a>
                 </div>
             </form>
         </div>
