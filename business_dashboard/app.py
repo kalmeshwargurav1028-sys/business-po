@@ -83,7 +83,11 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         
-        user = users_collection.find_one({'email': email})
+        try:
+            user = users_collection.find_one({'email': email})
+        except Exception as e:
+            flash(f"Database Error: {str(e)[:100]}... Make sure MongoDB Atlas IP Access is set to 0.0.0.0/0 in the correct project.", 'error')
+            return redirect(url_for('login'))
         
         if user and check_password_hash(user['password'], password):
             otp = str(random.randint(100000, 999999))
