@@ -198,7 +198,9 @@
     <div class="profile-card">
         <div class="profile-header">
             <div class="profile-avatar-wrapper">
-                {% if user.photo %}
+                {% if user.photo_base64 %}
+                    <img src="{{ user.photo_base64 }}" alt="Profile Photo">
+                {% elif user.photo %}
                     <img src="{{ url_for('static', filename='uploads/profiles/' + user.photo) }}" alt="Profile Photo">
                 {% else %}
                     {{ user.name[:2] | upper }}
@@ -206,7 +208,6 @@
             </div>
             <div class="profile-info">
                 <h3>{{ user.name }}</h3>
-                <p>{{ user.email }}</p>
                 <span style="display: inline-block; margin-top: 0.5rem; background: #e0f2fe; color: #0284c7; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
                     {{ user.get('role', 'Admin') }}
                 </span>
@@ -246,7 +247,8 @@
                 <div class="form-group" style="border-top: 1px solid #e2e8f0; padding-top: 1.5rem; margin-top: 1.5rem;">
                     <label class="form-label">Update Profile Photo</label>
                     <div class="file-input-wrapper">
-                        <input type="file" name="photo" id="photoInput" accept="image/*">
+                        <input type="file" id="photoInput" accept="image/*">
+                        <input type="hidden" name="photo_base64" id="photoBase64">
                     </div>
                     <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem;">Recommended size: 200x200px. Max size: 2MB.</p>
                 </div>
@@ -344,28 +346,22 @@
                     height: 400,
                 });
                 
-                canvas.toBlob(function(blob) {
-                    // Create a new File object from the blob
-                    const originalName = photoInput.files[0].name;
-                    croppedFile = new File([blob], "cropped_" + originalName, { type: 'image/jpeg' });
-                    
-                    // Update preview immediately
-                    const url = URL.createObjectURL(blob);
-                    if (profileAvatarImg) {
-                        profileAvatarImg.src = url;
-                    } else {
-                        // If there was no previous image (initials were showing)
-                        const wrapper = document.querySelector('.profile-avatar-wrapper');
-                        wrapper.innerHTML = `<img src="${url}" alt="Profile Photo">`;
-                    }
-                    
-                    // Overwrite the file input using DataTransfer
-                    const dataTransfer = new DataTransfer();
-                    dataTransfer.items.add(croppedFile);
-                    photoInput.files = dataTransfer.files;
-                    
-                    closeModal();
-                }, 'image/jpeg', 0.9);
+                // Get base64 string directly
+                const base64Image = canvas.toDataURL('image/jpeg', 0.9);
+                
+                // Store in hidden input for backend
+                document.getElementById('photoBase64').value = base64Image;
+                croppedFile = true; // Mark as cropped
+                
+                // Update preview immediately
+                if (profileAvatarImg) {
+                    profileAvatarImg.src = base64Image;
+                } else {
+                    const wrapper = document.querySelector('.profile-avatar-wrapper');
+                    wrapper.innerHTML = `<img src="${base64Image}" alt="Profile Photo">`;
+                }
+                
+                closeModal();
             }
         });
     });

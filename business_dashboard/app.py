@@ -155,6 +155,7 @@ def login():
                 'role': user.get('role', 'Admin'),
                 'phone': user.get('phone', ''),
                 'photo': user.get('photo', ''),
+                'photo_base64': user.get('photo_base64', ''),
                 'permissions': user.get('permissions', {
                     'dashboard': False, 'create_po': False, 'view_pos': False,
                     'create_invoice': False, 'inventory': False, 'transport': False, 'delete_data': False, 'view_financials': False
@@ -206,7 +207,8 @@ def verify_otp():
             session['user_email'] = user_data['email']
             session['user_role'] = user_data['role']
             session['user_phone'] = user_data['phone']
-            session['user_photo'] = user_data['photo']
+            session['user_photo'] = user_data.get('photo', '')
+            session['user_photo_base64'] = user_data.get('photo_base64', '')
             session['user_permissions'] = user_data.get('permissions', {})
             log_activity('Logged In', 'User authenticated successfully')
             
@@ -902,15 +904,11 @@ def update_profile():
         'phone': phone
     }
     
-    # Handle Photo Upload
-    if 'photo' in request.files:
-        file = request.files['photo']
-        if file and file.filename != '':
-            filename = secure_filename(f"{user_id}_{file.filename}")
-            filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(filepath)
-            update_data['photo'] = filename
-            session['user_photo'] = filename
+    # Handle Photo Upload (Base64 from Cropper to bypass Vercel read-only FS)
+    photo_base64 = request.form.get('photo_base64')
+    if photo_base64:
+        update_data['photo_base64'] = photo_base64
+        session['user_photo_base64'] = photo_base64
 
     # Update database
     users_collection.update_one({'_id': ObjectId(user_id)}, {'$set': update_data})
