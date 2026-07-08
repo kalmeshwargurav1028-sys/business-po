@@ -58,7 +58,12 @@ settings_collection = db['settings']
 
 @app.context_processor
 def inject_settings():
-    settings = settings_collection.find_one({'type': 'global'})
+    try:
+        settings = settings_collection.find_one({'type': 'global'})
+    except Exception as e:
+        settings = None
+        return dict(global_settings={'business_name': f"ERROR: {str(e)}", 'email': '', 'phone': '', 'address': '', 'tax_id': '', 'mode': 'business'})
+        
     if not settings:
         settings = {
             'type': 'global',
