@@ -131,9 +131,9 @@ function openPermModal(userId, userName, permissions) {
 
 {% block content %}
 <div class="card">
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
-        <h2 class="card-title">All Registered Users</h2>
-        <a href="{{ url_for('register') }}" class="btn btn-primary" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; border-bottom: 1px solid #e2e8f0; background: #f8fafc; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+        <h2 style="margin: 0; font-size: 1.5rem; font-weight: 500; color: #334155; white-space: nowrap;">All Registered Users</h2>
+        <a href="{{ url_for('register') }}" class="btn btn-primary" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: 500; font-size: 0.9rem; width: auto; flex-shrink: 0;">
             <i class="fas fa-plus"></i> Add Employee
         </a>
     </div>
