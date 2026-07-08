@@ -1,4 +1,5 @@
 Flask
 python-dotenv
-pymongo
+pymongo[srv]
+dnspython
 Werkzeug
