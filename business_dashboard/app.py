@@ -55,7 +55,9 @@ def log_activity(action, details=""):
         'timestamp': datetime.datetime.now()
     })
 
-def send_otp_email(to_email, otp_code):
+import threading
+
+def send_otp_email_async(to_email, otp_code):
     # Using the Office 365 credentials provided
     sender_email = "agent4@indusschool.com"
     sender_password = "Agent@2026"
@@ -73,10 +75,15 @@ def send_otp_email(to_email, otp_code):
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
-        return True
     except Exception as e:
         print(f"Failed to send email: {e}")
-        return False
+
+def send_otp_email(to_email, otp_code):
+    # Run the email sending in a background thread to prevent slow login page loads
+    thread = threading.Thread(target=send_otp_email_async, args=(to_email, otp_code))
+    thread.daemon = True
+    thread.start()
+    return True
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, 
