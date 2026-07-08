@@ -34,7 +34,10 @@ def send_otp_email(to_email, otp_code):
 app = Flask(__name__)
 app.secret_key = 'business_dashboard_secret'
 app.config['UPLOAD_FOLDER'] = 'static/uploads/profiles'
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+try:
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+except OSError:
+    pass # Vercel has a read-only filesystem, ignore the error
 
 # Connect to MongoDB
 mongo_uri = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
