@@ -297,23 +297,68 @@
                 
                 <div class="bottom-links">
                     <a href="{{ url_for('forgot_password') }}"><i class="fas fa-key"></i> Forgot Password</a>
-                    <a href="#" class="need-help" onclick="document.getElementById('helpBox').style.display = document.getElementById('helpBox').style.display === 'none' ? 'block' : 'none'; return false;"><i class="far fa-question-circle"></i> Need help?</a>
+                    <a href="#" class="need-help" onclick="document.getElementById('helpModal').style.display = 'flex'; return false;"><i class="far fa-question-circle"></i> Need help?</a>
                 </div>
-                
-                <div id="helpBox" style="display: none; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-top: 1rem; text-align: left; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-                    <div style="font-weight: 700; color: #0f172a; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; font-size: 1.05rem;">
+            </form>
+        </div>
+    </div>
+
+    <!-- Need Help Modal -->
+    <div id="helpModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(2px);">
+        <div style="background: white; border-radius: 12px; padding: 24px; width: 500px; max-width: 90%; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; font-size: 1.2rem; color: #0f172a; display: flex; align-items: center; gap: 8px;">
+                    <i class="far fa-question-circle" style="color: #3b82f6;"></i> Need Help?
+                </h2>
+                <button onclick="document.getElementById('helpModal').style.display = 'none'" style="background: none; border: none; font-size: 1.2rem; color: #94a3b8; cursor: pointer;">&times;</button>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Technical Support -->
+                <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+                    <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem;">
                         <i class="fas fa-headset" style="color: #3b82f6;"></i> Technical Support
                     </div>
-                    <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 12px; line-height: 1.4;">
+                    <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 8px;">
                         For technical support and login issues, please contact:
                     </div>
                     <div>
-                        <a href="mailto:kalmeshwargurav1028@gmail.com" style="color: #3b82f6; text-decoration: none; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                        <a href="mailto:kalmeshwargurav1028@gmail.com" style="color: #475569; text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 8px;">
                             <i class="far fa-envelope"></i> kalmeshwargurav1028@gmail.com
                         </a>
                     </div>
                 </div>
-            </form>
+
+                <!-- Account Creation -->
+                <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+                    <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem;">
+                        <i class="fas fa-user-plus" style="color: #3b82f6;"></i> Account Creation
+                    </div>
+                    <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 8px;">
+                        To request a new account or access permissions:
+                    </div>
+                    <div style="font-size: 0.9rem; color: #475569;">
+                        <strong>System Administrator:</strong> kalmeshwargurav1028@gmail.com
+                    </div>
+                </div>
+
+                <!-- Academic -->
+                <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+                    <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem;">
+                        <i class="fas fa-graduation-cap" style="color: #3b82f6;"></i> Academic
+                    </div>
+                    <div style="color: #64748b; font-size: 0.85rem; margin-bottom: 8px;">
+                        For academic concerns or password resets:
+                    </div>
+                    <div style="font-size: 0.9rem; color: #475569;">
+                        <strong>Academic Team:</strong> kalmeshwargurav1028@gmail.com
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: right; margin-top: 20px;">
+                <button onclick="document.getElementById('helpModal').style.display = 'none'" style="background: white; border: 1px solid #cbd5e1; padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; color: #475569; cursor: pointer; font-weight: 500;">Close</button>
+            </div>
         </div>
     </div>
 
