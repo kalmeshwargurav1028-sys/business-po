@@ -849,12 +849,10 @@ def update_profile():
     user_id = session['user_id']
     name = request.form.get('name')
     phone = request.form.get('phone')
-    role = request.form.get('role')
     
     update_data = {
         'name': name,
-        'phone': phone,
-        'role': role
+        'phone': phone
     }
     
     # Handle Photo Upload
@@ -873,7 +871,6 @@ def update_profile():
     # Update Session
     session['user_name'] = name
     session['user_phone'] = phone
-    session['user_role'] = role
     
     flash('Profile updated successfully!', 'success')
     return redirect(url_for('profile'))

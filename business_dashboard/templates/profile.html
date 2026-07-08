@@ -162,13 +162,8 @@
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label">Your Role</label>
-                        <select class="form-control" name="role">
-                            <option value="Admin" {% if user.get('role') == 'Admin' %}selected{% endif %}>Admin</option>
-                            <option value="Manager" {% if user.get('role') == 'Manager' %}selected{% endif %}>Manager</option>
-                            <option value="Staff" {% if user.get('role') == 'Staff' %}selected{% endif %}>Staff</option>
-                            <option value="Owner" {% if user.get('role') == 'Owner' %}selected{% endif %}>Owner</option>
-                        </select>
+                        <label class="form-label">Your Role (Managed by Admin)</label>
+                        <input type="text" class="form-control" value="{{ user.get('role', 'Employee') }}" disabled style="background: #f1f5f9; color: #64748b; font-weight: 600;">
                     </div>
                 </div>
                 
