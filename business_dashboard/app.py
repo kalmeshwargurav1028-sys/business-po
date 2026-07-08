@@ -53,9 +53,9 @@ def log_activity(action, details=""):
     })
 
 def send_otp_email(to_email, otp_code):
-    # Using the Office 365 credentials provided
-    sender_email = "agent4@indusschool.com"
-    sender_password = "Agent@2026"
+    # Load credentials from environment variables to avoid hardcoding
+    sender_email = os.environ.get("SMTP_EMAIL", "")
+    sender_password = os.environ.get("SMTP_PASSWORD", "")
         
     try:
         msg = MIMEText(f"Your login OTP is: {otp_code}")
@@ -79,7 +79,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, 
             template_folder=os.path.join(BASE_DIR, 'templates'),
             static_folder=os.path.join(BASE_DIR, 'static'))
-app.secret_key = 'business_dashboard_secret'
+app.secret_key = os.environ.get('SECRET_KEY', 'business_dashboard_secret')
 app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static/uploads/profiles')
 try:
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
