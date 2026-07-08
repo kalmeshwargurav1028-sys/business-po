@@ -37,7 +37,8 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads/profiles'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Connect to MongoDB
-client = MongoClient('mongodb://localhost:27017/')
+mongo_uri = os.environ.get('MONGO_URI', 'mongodb://localhost:27017/')
+client = MongoClient(mongo_uri)
 db = client['business_dashboard_db']
 users_collection = db['users']
 vendors_collection = db['vendors']
