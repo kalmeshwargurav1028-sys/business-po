@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Employee Login - Business Dashboard</title>
+    <title>Admin Login - Business Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body, html {
@@ -40,6 +40,20 @@
             justify-content: center;
         }
 
+        .secure-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 2rem;
+            align-self: flex-start;
+            text-transform: uppercase;
+        }
+
         .welcome-title {
             font-size: 3.5rem;
             font-weight: 800;
@@ -51,7 +65,28 @@
         .welcome-subtitle {
             font-size: 1.1rem;
             color: #dbeafe;
-            margin: 0;
+            margin: 0 0 3rem 0;
+            font-weight: 500;
+        }
+
+        .admin-features {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            color: #e0e7ff;
+            font-weight: 500;
+        }
+
+        .feature-icon {
+            width: 24px;
+            text-align: center;
         }
 
         .right-panel {
@@ -65,7 +100,7 @@
 
         .logo-area {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .crest-icon {
@@ -107,29 +142,15 @@
             margin: 0;
         }
 
-        .tabs {
-            display: flex;
-            background: #f1f5f9;
-            border-radius: 8px;
-            padding: 4px;
-            margin: 1.5rem 0;
-        }
-
-        .tab {
-            flex: 1;
+        .admin-pill {
             text-align: center;
+            border: 2px solid #f1f5f9;
+            color: #2563eb;
+            font-weight: 700;
             padding: 10px;
-            border-radius: 6px;
+            border-radius: 8px;
+            margin: 1.5rem 0;
             font-size: 0.9rem;
-            font-weight: 600;
-            color: #64748b;
-            cursor: default;
-        }
-
-        .tab.active {
-            background: white;
-            color: #1e3a8a;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
 
         .form-group {
@@ -221,16 +242,6 @@
             text-decoration: underline;
         }
 
-        .need-help {
-            color: #ef4444 !important;
-        }
-
-        .create-account {
-            color: #64748b !important;
-            font-size: 0.85rem !important;
-            text-decoration: underline !important;
-        }
-
         .alert {
             padding: 12px;
             margin-bottom: 1.5rem;
@@ -254,8 +265,21 @@
     <div class="login-container">
         <!-- Left Panel -->
         <div class="left-panel">
-            <h1 class="welcome-title">Welcome Back</h1>
-            <p class="welcome-subtitle">Access your Business Employee Dashboard</p>
+            <div class="secure-badge">SECURE ACCESS</div>
+            <h1 class="welcome-title">Admin Portal</h1>
+            <p class="welcome-subtitle">System administration & management</p>
+            
+            <div class="admin-features">
+                <div class="feature-item">
+                    <i class="fas fa-lock feature-icon"></i> Encrypted secure connection
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-user-shield feature-icon"></i> Authorized administrators only
+                </div>
+                <div class="feature-item">
+                    <i class="fas fa-chart-line feature-icon"></i> Full system management access
+                </div>
+            </div>
         </div>
 
         <!-- Right Panel -->
@@ -265,12 +289,11 @@
                 <h2 class="school-name-main">INDUS</h2>
                 <div class="school-name-sub">BUSINESS OPERATIONS</div>
                 <div class="system-name">BUSINESS MANAGEMENT PORTAL</div>
-                <h3 class="login-title">Log In</h3>
+                <h3 class="login-title">Admin Login</h3>
             </div>
 
-            <div class="tabs">
-                <div class="tab active">Employee Portal</div>
-                <div class="tab" style="cursor: pointer; color: #94a3b8;" onclick="window.location.href='{{ url_for('admin_portal') }}'">Admin</div>
+            <div class="admin-pill">
+                Administrator
             </div>
 
             {% with messages = get_flashed_messages(with_categories=true) %}
@@ -285,8 +308,8 @@
 
             <form method="POST" action="{{ url_for('login') }}">
                 <div class="form-group">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" required>
+                    <label for="email" class="form-label">Admin Email</label>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="admin@example.com" required>
                 </div>
                 
                 <div class="form-group">
@@ -301,10 +324,11 @@
                 
                 <div class="bottom-links">
                     <a href="{{ url_for('forgot_password') }}"><i class="fas fa-key"></i> Forgot Password</a>
-                    <a href="#" class="need-help"><i class="far fa-question-circle"></i> Need help?</a>
-                    <a href="{{ url_for('register') }}" class="create-account">Create New Account</a>
                 </div>
             </form>
+            <div style="text-align: center; margin-top: 1rem;">
+                <a href="{{ url_for('login') }}" style="color: #94a3b8; font-size: 0.8rem; text-decoration: none;">Return to Employee Login</a>
+            </div>
         </div>
     </div>
 

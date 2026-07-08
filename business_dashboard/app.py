@@ -159,6 +159,15 @@ def login():
             
     return render_template('login.html')
 
+@app.route('/admin-portal', methods=['GET', 'POST'])
+def admin_portal():
+    if request.method == 'POST':
+        # The form on admin_login.html posts to /login natively, 
+        # but just in case it posts here, we can redirect or handle it.
+        # It's better if it posts to /login so we don't duplicate login logic.
+        return redirect(url_for('login'), code=307)
+    return render_template('admin_login.html')
+
 @app.route('/verify-otp', methods=['GET', 'POST'])
 def verify_otp():
     if 'temp_user' not in session or 'otp' not in session:
