@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile - Business Dashboard{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<style>
+    .profile-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .profile-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+    .profile-header {
+        background: #f8fafc;
+        padding: 1.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    .profile-avatar-wrapper {
+        position: relative;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 600;
+        overflow: hidden;
+        border: 3px solid white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .profile-avatar-wrapper img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .profile-info h3 {
+        margin: 0 0 0.25rem 0;
+        color: #1e293b;
+    }
+    .profile-info p {
+        margin: 0;
+        color: #64748b;
+        font-size: 0.9rem;
+    }
+    
+    .profile-body {
+        padding: 1.5rem;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-label {
+        display: block;
+        font-size: 0.85rem;
+        color: #475569;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        font-size: 0.95rem;
+        color: #1e293b;
+        box-sizing: border-box;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    }
+    .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+    
+    .file-input-wrapper {
+        margin-top: 0.5rem;
+    }
+    .file-input-wrapper input[type=file] {
+        font-size: 0.85rem;
+        color: #64748b;
+    }
+    .file-input-wrapper input[type=file]::file-selector-button {
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        border: 1px solid #cbd5e1;
+        background: #f8fafc;
+        color: #334155;
+        cursor: pointer;
+        margin-right: 1rem;
+        transition: all 0.2s;
+    }
+    .file-input-wrapper input[type=file]::file-selector-button:hover {
+        background: #e2e8f0;
+    }
+</style>
+
+<div class="profile-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="margin-bottom: 2rem; padding: 1rem; border-radius: 4px; background: {% if category == 'success' %}#dcfce7{% else %}#fee2e2{% endif %}; color: {% if category == 'success' %}#166534{% else %}#991b1b{% endif %};">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="profile-card">
+        <div class="profile-header">
+            <div class="profile-avatar-wrapper">
+                {% if user.photo %}
+                    <img src="{{ url_for('static', filename='uploads/profiles/' + user.photo) }}" alt="Profile Photo">
+                {% else %}
+                    {{ user.name[:2] | upper }}
+                {% endif %}
+            </div>
+            <div class="profile-info">
+                <h3>{{ user.name }}</h3>
+                <p>{{ user.email }}</p>
+                <span style="display: inline-block; margin-top: 0.5rem; background: #e0f2fe; color: #0284c7; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600;">
+                    {{ user.get('role', 'Admin') }}
+                </span>
+            </div>
+        </div>
+        
+        <div class="profile-body">
+            <form method="POST" action="{{ url_for('update_profile') }}" enctype="multipart/form-data">
+                
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-control" name="name" value="{{ user.name }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email Address (Read Only)</label>
+                        <input type="email" class="form-control" value="{{ user.email }}" disabled style="background: #f1f5f9; color: #64748b;">
+                    </div>
+                </div>
+                
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" class="form-control" name="phone" value="{{ user.get('phone', '') }}" placeholder="Enter your phone number">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Your Role</label>
+                        <select class="form-control" name="role">
+                            <option value="Admin" {% if user.get('role') == 'Admin' %}selected{% endif %}>Admin</option>
+                            <option value="Manager" {% if user.get('role') == 'Manager' %}selected{% endif %}>Manager</option>
+                            <option value="Staff" {% if user.get('role') == 'Staff' %}selected{% endif %}>Staff</option>
+                            <option value="Owner" {% if user.get('role') == 'Owner' %}selected{% endif %}>Owner</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="border-top: 1px solid #e2e8f0; padding-top: 1.5rem; margin-top: 1.5rem;">
+                    <label class="form-label">Update Profile Photo</label>
+                    <div class="file-input-wrapper">
+                        <input type="file" name="photo" accept="image/*">
+                    </div>
+                    <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem;">Recommended size: 200x200px. Max size: 2MB.</p>
+                </div>
+
+                <div style="text-align: right; margin-top: 2rem;">
+                    <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2.5rem; font-size: 1rem; border-radius: 4px; box-shadow: 0 4px 6px rgba(37,99,235,0.2);">Update Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

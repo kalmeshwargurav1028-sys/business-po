@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Submitted PO - Business Dashboard{% endblock %}
+{% block page_title %}Submitted POs{% endblock %}
+
+{% block content %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
+    }
+    .stat-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+    }
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+    .table-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+    }
+    .filter-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .search-input {
+        padding: 0.65rem 1rem 0.65rem 2.5rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        width: 300px;
+        font-size: 0.95rem;
+        background-color: white;
+    }
+    .filter-select {
+        padding: 0.65rem 2rem 0.65rem 1rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        background-color: white;
+        min-width: 130px;
+    }
+    .po-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .po-table th {
+        text-align: left;
+        padding: 1rem 0.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+    .po-table td {
+        padding: 1rem 0.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.95rem;
+        vertical-align: middle;
+    }
+    .po-number-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+    }
+    .po-number-link:hover {
+        text-decoration: underline;
+    }
+    .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .badge-pending {
+        background-color: #fef3c7;
+        color: #b45309;
+    }
+    .badge-approved {
+        background-color: #e0f2fe;
+        color: #0369a1;
+    }
+    .badge-delivered {
+        background-color: #dcfce3;
+        color: #166534;
+    }
+    .badge-rejected {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+    .action-links {
+        display: flex;
+        gap: 0.75rem;
+    }
+    .action-link {
+        color: var(--text-muted);
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: color 0.2s;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+    }
+    .action-link:hover {
+        color: var(--text-main);
+    }
+    .action-delete {
+        color: #ef4444;
+    }
+    .action-delete:hover {
+        color: #b91c1c;
+    }
+</style>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div style="margin-bottom: 1rem;">
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" style="padding: 10px; border-radius: 4px; background-color: {% if category == 'error' %}#fee2e2{% else %}#d1fae5{% endif %}; color: {% if category == 'error' %}#991b1b{% else %}#065f46{% endif %};">
+                {{ message }}
+            </div>
+        {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<!-- Top Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Total POs</div>
+        <div class="stat-value">{{ total_pos }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Pending Approval</div>
+        <!-- Hardcoded to 0 per user request -->
+        <div class="stat-value">0</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Approved</div>
+        <div class="stat-value">{{ approved_count }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total Value</div>
+        <!-- Hardcoded to 0 per user request -->
+        <div class="stat-value">₹0.00</div>
+    </div>
+</div>
+
+<!-- Table Card -->
+<div class="table-card">
+    <div class="filter-row">
+        <div style="position: relative;">
+            <i class="fas fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+            <input type="text" class="search-input" placeholder="Search by PO number or vendor">
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <select class="filter-select">
+                <option>All Status</option>
+                <option>Pending</option>
+                <option>Approved</option>
+                <option>Delivered</option>
+                <option>Rejected</option>
+            </select>
+            <select class="filter-select">
+                <option>Newest First</option>
+                <option>Oldest First</option>
+            </select>
+        </div>
+    </div>
+
+    <table class="po-table">
+        <thead>
+            <tr>
+                <th>PO NUMBER</th>
+                <th>VENDOR</th>
+                <th>DATE SUBMITTED</th>
+                <th>ITEMS</th>
+                <th>AMOUNT</th>
+                <th>STATUS</th>
+                <th>ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for po in pos %}
+            <tr>
+                <td><a href="{{ url_for('view_po', po_id=po._id) }}" class="po-number-link">{{ po.get('po_number', 'Old-PO') }}</a></td>
+                <td>
+                    <div style="max-width: 180px; line-height: 1.3;">
+                        {{ po.vendor_name }}
+                    </div>
+                </td>
+                <td>
+                    {% if po.get('date_created') %}
+                        {{ po.date_created.strftime('%d %b %Y') }}
+                    {% elif po.get('date') %}
+                        {{ po.date.strftime('%d %b %Y') }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                <td>{{ po.items_count }} item{{ 's' if po.items_count != 1 else '' }}</td>
+                <td style="font-weight: 600;">₹{{ "%.2f"|format(po.total|float) if po.total else "0.00" }}</td>
+                <td>
+                    <span class="badge {% if po.display_status == 'Pending' %}badge-pending{% else %}badge-approved{% endif %}">
+                        {{ po.display_status }}
+                    </span>
+                </td>
+                <td>
+                    <div class="action-links" style="display: flex; gap: 0.75rem; align-items: center; font-size: 1.1rem;">
+                        <a href="{{ url_for('view_po', po_id=po._id) }}" style="color: var(--primary-color); text-decoration: none;" title="View"><i class="fas fa-eye"></i></a>
+                        <a href="{{ url_for('view_po', po_id=po._id) }}?print=true" target="_blank" style="color: var(--text-muted); text-decoration: none;" title="Download"><i class="fas fa-download"></i></a>
+                        <button onclick="alert('PO has been successfully resent to the vendor!')" style="background: none; border: none; color: #10b981; cursor: pointer; padding: 0; font-size: 1.1rem;" title="Resend"><i class="fas fa-paper-plane"></i></button>
+                        <form action="{{ url_for('delete_po', po_id=po._id) }}" method="POST" style="display: inline; margin: 0;" onsubmit="return confirm('Are you sure you want to delete this Purchase Order?');">
+                            <button type="submit" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0; font-size: 1.1rem;" title="Delete"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                    No Purchase Orders found.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

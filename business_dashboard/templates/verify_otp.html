@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP - Business Portal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f8fafc;
+            background-image: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-wrapper {
+            width: 100%;
+            max-width: 440px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 2.5rem 2.5rem;
+            text-align: center;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #f1f5f9;
+        }
+
+        .logo-area {
+            margin-bottom: 1.5rem;
+        }
+
+        .crest-icon {
+            color: #2563eb;
+            font-size: 2.4rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .school-name-main {
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+            color: #0f172a;
+            font-weight: 800;
+            margin: 0 0 0.25rem 0;
+            line-height: 1.2;
+        }
+
+        .school-name-sub {
+            font-size: 0.95rem;
+            color: #475569;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-input {
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 14px 16px;
+            width: 100%;
+            box-sizing: border-box;
+            color: #0f172a;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .btn-submit {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 14px;
+            width: 100%;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+        }
+
+        .btn-submit:hover {
+            background-color: #1d4ed8;
+        }
+        
+        .btn-submit:active {
+            transform: translateY(1px);
+        }
+
+        .forgot-password {
+            margin-top: 1.5rem;
+        }
+
+        .forgot-password a {
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .forgot-password a:hover {
+            text-decoration: underline;
+            color: #334155;
+        }
+
+        .alert {
+            padding: 12px;
+            margin-bottom: 1.5rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+        .alert-error {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        .alert-success {
+            background-color: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="login-card">
+            
+            <div class="logo-area">
+                <i class="fas fa-shield-alt crest-icon"></i>
+                <div class="school-name-main">Security Check</div>
+                <div class="school-name-sub">Two-Factor Authentication</div>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <p style="color: #475569; font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5;">
+                We've sent a 6-digit code to <strong>{{ session.get('temp_user', {}).get('email', 'your email') }}</strong>.<br>Please enter it below to continue.
+            </p>
+
+            <form method="POST" action="{{ url_for('verify_otp') }}">
+                <div class="form-group">
+                    <input type="text" id="otp" name="otp" class="form-input" style="text-align: center; font-size: 1.5rem; letter-spacing: 0.5rem; font-weight: bold;" placeholder="------" required maxlength="6" pattern="\d{6}">
+                </div>
+                
+                <button type="submit" class="btn-submit">Verify Code</button>
+                
+                <div class="forgot-password">
+                    <a href="{{ url_for('login') }}">Back to Login</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

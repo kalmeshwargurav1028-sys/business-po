@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Transport & Tracking - Business Dashboard{% endblock %}
+{% block page_title %}Transport & Courier Tracking{% endblock %}
+
+{% block content %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
+    }
+    .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .stat-value { font-size: 1.5rem; font-weight: 700; color: #1e293b; }
+    
+    .table-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+    }
+    .filter-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .inv-table { width: 100%; border-collapse: collapse; }
+    .inv-table th {
+        text-align: left;
+        padding: 1rem 0.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+    .inv-table td {
+        padding: 1rem 0.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.95rem;
+        vertical-align: middle;
+    }
+    
+    .badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+        text-align: center;
+    }
+    .badge-prep { background-color: #f1f5f9; color: #475569; }
+    .badge-transit { background-color: #fef3c7; color: #b45309; }
+    .badge-deliv { background-color: #dcfce3; color: #166534; }
+    
+    .status-select {
+        padding: 0.25rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 4px;
+        font-size: 0.85rem;
+    }
+</style>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Total Shipments</div>
+        <div class="stat-value">{{ total }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Preparing</div>
+        <div class="stat-value">{{ preparing }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">In Transit</div>
+        <div class="stat-value">{{ in_transit }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Delivered</div>
+        <div class="stat-value">{{ delivered }}</div>
+    </div>
+</div>
+
+<div class="table-card">
+    <div class="filter-row" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1rem;">
+        <h3 style="margin: 0; color: #1e293b; font-size: 1.25rem;">Active Tracking List</h3>
+        <button class="btn btn-primary" style="width: auto; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.95rem; border-radius: 6px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onclick="document.getElementById('addModal').style.display='block'">
+            <i class="fas fa-plus"></i> Track New Shipment
+        </button>
+    </div>
+
+    <table class="inv-table">
+        <thead>
+            <tr>
+                <th>TRACKING NUMBER</th>
+                <th>COURIER / FLEET</th>
+                <th>DESTINATION</th>
+                <th>DATE ADDED</th>
+                <th>STATUS</th>
+                <th>UPDATE</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in shipments %}
+            <tr>
+                <td style="font-weight: 600;">{{ s.tracking_number }}</td>
+                <td>{{ s.courier }}</td>
+                <td>{{ s.destination }}</td>
+                <td style="color: #64748b;">{{ s.date_added.strftime('%Y-%m-%d') if s.get('date_added') else 'N/A' }}</td>
+                <td>
+                    <span class="badge 
+                        {% if s.status == 'Preparing' %}badge-prep
+                        {% elif s.status == 'In Transit' %}badge-transit
+                        {% else %}badge-deliv{% endif %}">
+                        {{ s.status }}
+                    </span>
+                </td>
+                <td>
+                    <form action="{{ url_for('update_transport_status', shipment_id=s._id) }}" method="POST" style="display: flex; gap: 0.5rem; align-items: center;">
+                        <select name="status" class="status-select">
+                            <option value="Preparing" {% if s.status == 'Preparing' %}selected{% endif %}>Preparing</option>
+                            <option value="In Transit" {% if s.status == 'In Transit' %}selected{% endif %}>In Transit</option>
+                            <option value="Delivered" {% if s.status == 'Delivered' %}selected{% endif %}>Delivered</option>
+                        </select>
+                        <button type="submit" style="background: var(--primary-color); color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Save</button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                    No shipments tracked yet. Click "Track New Shipment".
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Modal -->
+<div id="addModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="background: white; width: 500px; margin: 100px auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="margin: 0;">Track New Shipment</h3>
+            <button onclick="document.getElementById('addModal').style.display='none'" style="background: none; border: none; cursor: pointer; font-size: 1.2rem;">&times;</button>
+        </div>
+        <form action="{{ url_for('add_transport') }}" method="POST">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #475569;">Tracking Number / Ref ID</label>
+                <input type="text" name="tracking_number" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #475569;">Courier / Fleet Name</label>
+                    <input type="text" name="courier" placeholder="e.g. FedEx, BlueDart" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #475569;">Status</label>
+                    <select name="status" style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+                        <option value="Preparing">Preparing</option>
+                        <option value="In Transit">In Transit</option>
+                        <option value="Delivered">Delivered</option>
+                    </select>
+                </div>
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #475569;">Destination / Customer Address</label>
+                <input type="text" name="destination" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+            </div>
+            <div style="text-align: right;">
+                <button type="button" onclick="document.getElementById('addModal').style.display='none'" style="padding: 0.5rem 1rem; border: 1px solid #cbd5e1; background: white; border-radius: 4px; cursor: pointer; margin-right: 0.5rem;">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem;">Add Tracker</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

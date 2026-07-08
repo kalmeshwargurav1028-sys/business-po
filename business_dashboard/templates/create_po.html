@@ -1,0 +1,760 @@
+{% extends "base.html" %}
+
+{% block title %}Create Purchase Order - Business Dashboard{% endblock %}
+{% block page_title %}Create Purchase Order{% endblock %}
+
+{% block content %}
+<style>
+    .form-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    .po-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 1.5rem;
+    }
+    .po-card-header {
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid #e2e8f0;
+        background-color: #f8fafc;
+        border-radius: 8px 8px 0 0;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #1e293b;
+    }
+    .po-card-body {
+        padding: 1rem 1.25rem;
+    }
+    .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+    }
+    .grid-2 {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+    .item-table th {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.5rem;
+        padding-right: 0.5rem;
+    }
+    .item-table td {
+        padding: 0.75rem 0.5rem 0.75rem 0;
+        vertical-align: top;
+    }
+    .item-input {
+        width: 100%;
+        padding: 0.65rem 0.75rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        color: #334155;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        box-sizing: border-box;
+    }
+    .item-input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .item-input[readonly] {
+        background-color: #f8fafc;
+        color: #475569;
+    }
+    .btn-add-item {
+        width: 100%;
+        padding: 0.75rem;
+        background: transparent;
+        border: 1px dashed var(--border-color);
+        color: var(--primary-color);
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        margin-top: 1rem;
+        transition: all 0.2s;
+    }
+    .btn-add-item:hover {
+        background: #f1f5f9;
+        border-color: var(--primary-color);
+    }
+    .summary-box {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: flex-end;
+    }
+    .summary-grid {
+        display: grid;
+        grid-template-columns: 150px 150px;
+        gap: 1rem;
+        align-items: center;
+        text-align: right;
+    }
+    .summary-label {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+    }
+    .summary-value {
+        padding: 0.5rem;
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        background: white;
+    }
+    .summary-total-label {
+        font-weight: bold;
+        font-size: 1.1rem;
+        color: var(--text-main);
+    }
+    .summary-total-value {
+        font-weight: bold;
+        font-size: 1.25rem;
+        border: none;
+        background: transparent;
+        padding: 0;
+        text-align: right;
+    }
+    .action-bar {
+        background: white;
+        padding: 1rem 1.25rem;
+        border-radius: 8px;
+        box-shadow: 0 -4px 10px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+        border: 1px solid #e2e8f0;
+    }
+    .action-left {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    /* Preview Modal Styles */
+    .po-preview { background: white; padding: 4rem; position: relative; font-family: 'Inter', sans-serif; overflow: hidden; }
+    .po-preview::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 8px; background: linear-gradient(90deg, #1d4ed8, #3b82f6); }
+    .preview-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3rem; border-bottom: 2px solid #2563eb; padding-bottom: 1.5rem; }
+    .preview-title { font-size: 2.5rem; font-weight: 800; color: #1e3a8a; letter-spacing: -0.5px; }
+    .preview-meta { text-align: right; color: #475569; font-size: 0.95rem; line-height: 1.6; }
+    .preview-addresses { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem; }
+    .preview-address-block h4 { color: #1e3a8a; font-size: 1.1rem; font-weight: 700; margin: 0 0 1rem 0; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+    .preview-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+    .preview-table th { background: #f8fafc; color: #1e3a8a; font-weight: 700; text-transform: uppercase; font-size: 0.8rem; padding: 1rem; text-align: left; border-bottom: 2px solid #e2e8f0; }
+    .preview-table td { padding: 1rem; border-bottom: 1px solid #e2e8f0; color: #334155; }
+    .preview-totals { width: 350px; margin-left: auto; }
+    .preview-total-row { display: flex; justify-content: space-between; padding: 0.75rem 0; color: #475569; }
+    .preview-total-row.grand-total { border-top: 2px solid #1e3a8a; margin-top: 0.5rem; padding-top: 1rem; font-weight: 800; font-size: 1.25rem; color: #0f172a; }
+    
+    @media print {
+        body * { visibility: hidden; }
+        #print-area, #print-area * { visibility: visible; }
+        #print-area { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none !important; margin: 0 !important; }
+        .sidebar, .topbar { display: none !important; }
+    }
+    .btn-outline {
+        border: 1px solid var(--border-color);
+        background: white;
+        color: var(--text-main);
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+    .error-text {
+        color: #ef4444;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        display: none;
+    }
+    .row-number {
+        display: flex;
+        align-items: center;
+        height: 38px;
+        color: var(--text-muted);
+    }
+    .btn-remove {
+        color: var(--text-muted);
+        background: none;
+        border: none;
+        cursor: pointer;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn-remove:hover {
+        color: #ef4444;
+    }
+    
+    .layout-2col {
+        display: grid;
+        grid-template-columns: 65% 35%;
+        gap: 1.5rem;
+        align-items: start;
+    }
+    @media (max-width: 1200px) {
+        .layout-2col {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div style="margin-bottom: 1rem;">
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" style="padding: 10px; margin-bottom: 10px; border-radius: 4px; background-color: {% if category == 'error' %}#fee2e2{% else %}#d1fae5{% endif %}; color: {% if category == 'error' %}#991b1b{% else %}#065f46{% endif %};">
+                {{ message }}
+            </div>
+        {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<div class="layout-2col">
+    <!-- LEFT COLUMN: Generator -->
+    <div class="left-col">
+        <form method="POST" action="{{ url_for('create_po') }}" id="po-form">
+            <input type="hidden" name="action" id="form-action" value="generated">
+        
+            <!-- Purchase Order Details -->
+            <div class="po-card">
+                <div class="po-card-header"><i class="fas fa-file-invoice" style="margin-right: 8px; color: var(--primary-color);"></i>Purchase Order Generator</div>
+                <div class="po-card-body grid-4">
+                    <div>
+                        <label class="form-label">PO Number</label>
+                        <input type="text" name="po_number" class="item-input" style="background-color: #eff6ff; color: #1e40af; border-color: #bfdbfe; font-weight: 600;" value="{{ po_number }}" readonly>
+                    </div>
+                    <div>
+                        <label class="form-label">PO Date</label>
+                        <input type="date" name="po_date" class="item-input" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Expected Delivery</label>
+                        <input type="date" name="expected_delivery" class="item-input">
+                    </div>
+                    <div>
+                        <label class="form-label">Payment Terms</label>
+                        <select name="payment_terms" class="item-input">
+                            <option value="UPI">UPI</option>
+                            <option value="Cheque">Cheque</option>
+                            <option value="Cash">Cash</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Purchase Order Generator (Vendor Info) -->
+            <div class="po-card">
+                <div class="po-card-header"><i class="fas fa-building" style="margin-right: 8px; color: var(--primary-color);"></i>Vendor Information</div>
+                <div class="po-card-body">
+                    <div style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1.5rem;">
+                        <div style="width: 300px;">
+                            <label class="form-label">Select Vendor</label>
+                            <select class="item-input" name="vendor" id="vendor-select" required style="height: 42px; width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                                <option value="" disabled selected>-- Select Vendor --</option>
+                                {% for vendor in vendors %}
+                                <option value="{{ vendor._id }}">{{ vendor.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <a href="{{ url_for('add_vendor') }}" class="btn btn-primary" style="text-decoration: none; height: 42px; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; padding: 0 1.25rem;"><i class="fas fa-plus" style="margin-right: 8px;"></i> Add Vendor</a>
+                        </div>
+                    </div>
+                    
+                    <div class="grid-2" style="margin-bottom: 1.5rem;">
+                        <div>
+                            <label class="form-label">Vendor Address</label>
+                            <textarea class="item-input" name="vendor_address" id="vendor_address" rows="2"></textarea>
+                        </div>
+                        <div>
+                            <label class="form-label">Vendor Phone</label>
+                            <input type="text" name="vendor_phone" id="vendor_phone" class="item-input">
+                        </div>
+                    </div>
+                    
+                    <div class="grid-2">
+                        <div>
+                            <label class="form-label">Ship To Address</label>
+                            <textarea class="item-input" name="ship_to" rows="2" placeholder="Leave blank to use vendor billing address, or enter warehouse address"></textarea>
+                            <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 0.25rem;">Where the vendor should deliver the goods.</div>
+                        </div>
+                        <div>
+                            <label class="form-label">Notes / Terms for Vendor</label>
+                            <textarea class="item-input" name="notes" rows="2" placeholder="e.g. Please deliver between 10am-5pm, quality check required on arrival"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        
+            <!-- Item Details -->
+            <div class="po-card">
+                <div class="po-card-header"><i class="fas fa-box-open" style="margin-right: 8px; color: var(--primary-color);"></i>Item Details</div>
+                <div class="po-card-body">
+                    <table class="item-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr>
+                                <th style="width: 30px;">NO</th>
+                                <th style="width: 20%;">ITEM NAME</th>
+                                <th style="width: 20%;">DESCRIPTION</th>
+                                <th style="width: 80px;">QTY</th>
+                                <th style="width: 120px;">UNIT PRICE</th>
+                                <th style="width: 100px;" title="Shipping cost for this item">SHIPPING</th>
+                                <th style="width: 90px;" title="Tax percentage applied to unit price">TAX (%)</th>
+                                <th style="width: 130px;">TOTAL</th>
+                                <th style="width: 40px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="po-items-tbody">
+                            <tr class="po-row">
+                                <td><div class="row-number">1</div></td>
+                                <td>
+                                    <input type="text" name="item_name[]" class="item-input item-name" required>
+                                    <div class="error-text">This item already exists in another row</div>
+                                </td>
+                                <td><input type="text" name="description[]" class="item-input" placeholder="Optional"></td>
+                                <td><input type="number" name="qty[]" class="item-input row-calc" value="1" min="1"></td>
+                                <td><input type="number" name="unit_price[]" class="item-input row-calc" value="0" min="0" step="0.01"></td>
+                                <td><input type="number" name="item_shipping[]" class="item-input row-calc" value="0" min="0" step="0.01"></td>
+                                <td><input type="number" name="tax[]" class="item-input row-calc" value="0" min="0" step="0.01"></td>
+                                <td style="vertical-align: middle; font-weight: bold;" class="row-total-text">0.00</td>
+                                <td><button type="button" class="btn-remove"><i class="fas fa-times"></i></button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <button type="button" class="btn-add-item" onclick="addRow()">+ Add Item</button>
+                    
+                    <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 2rem 0;">
+                    
+                    <div class="summary-box">
+                        <div class="summary-grid">
+                            <div class="summary-label">Subtotal</div>
+                            <input type="number" name="subtotal" id="subtotal" class="summary-value" value="0.00" readonly>
+                            
+                            <div class="summary-label">Total Shipping</div>
+                            <input type="number" name="total_shipping" id="total_shipping" class="summary-value" value="0.00" readonly>
+                            
+                            <div class="summary-label">Total Tax</div>
+                            <input type="number" name="total_tax" id="total_tax" class="summary-value" value="0.00" readonly>
+                            
+                            <div class="summary-total-label" style="margin-top: 1rem; border-top: 2px solid var(--text-main); padding-top: 1rem;">Total Amount</div>
+                            <div style="margin-top: 1rem; border-top: 2px solid var(--text-main); padding-top: 1rem;">
+                                <input type="number" name="total" id="grand_total" class="summary-total-value item-input" value="0.00" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Bar -->
+            <div class="action-bar" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: white; border-radius: 8px; margin-top: 1.5rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); border: 1px solid #e2e8f0;">
+                <div style="display: flex; gap: 1rem;">
+                    <button type="button" style="border: 1px solid #cbd5e1; background: white; padding: 0.75rem 1.5rem; cursor: pointer; border-radius: 6px; font-weight: 600; color: #475569; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='white'" onclick="submitAsDraft()">
+                        <i class="fas fa-save" style="margin-right: 0.5rem;"></i> Save as Draft
+                    </button>
+                    <button type="button" style="border: 1px solid #2563eb; background: #eff6ff; padding: 0.75rem 1.5rem; cursor: pointer; border-radius: 6px; font-weight: 600; color: #2563eb; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'" onclick="openPreviewModal()">
+                        <i class="fas fa-file-pdf" style="margin-right: 0.5rem;"></i> Preview PDF
+                    </button>
+                </div>
+                <button type="submit" style="background: var(--primary-color); color: white; padding: 0.75rem 2.5rem; font-size: 1.05rem; font-weight: 600; border-radius: 6px; border: none; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); display: flex; align-items: center; justify-content: center; transition: all 0.2s;" onmouseover="this.style.background='var(--primary-hover)'" onmouseout="this.style.background='var(--primary-color)'">
+                    <i class="fas fa-paper-plane" style="margin-right: 0.5rem;"></i> Generate PO
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- RIGHT COLUMN: Stats & History -->
+    <div class="right-col">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+            <!-- Stat Card 1 -->
+            <div class="po-card" style="margin-bottom: 0;">
+                <div class="po-card-body" style="padding: 1rem; display: flex; align-items: center; gap: 1rem;">
+                    <div style="background-color: #eff6ff; padding: 0.75rem; border-radius: 8px; color: var(--primary-color);">
+                        <i class="fas fa-file-invoice fa-lg"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Total POs</div>
+                        <div style="font-size: 1.25rem; font-weight: bold; color: var(--text-main);">{{ total_pos }}</div>
+                    </div>
+                </div>
+            </div>
+            <!-- Stat Card 2 -->
+            <div class="po-card" style="margin-bottom: 0;">
+                <div class="po-card-body" style="padding: 1rem; display: flex; align-items: center; gap: 1rem;">
+                    <div style="background-color: #f0fdf4; padding: 0.75rem; border-radius: 8px; color: #16a34a;">
+                        <i class="fas fa-money-bill-wave fa-lg"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Total Amount</div>
+                        <div style="font-size: 1.25rem; font-weight: bold; color: var(--text-main);">{{ "{:,.2f}".format(total_amount) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Purchase Order History -->
+        <div class="po-card" style="margin-bottom: 0; min-height: 500px;">
+            <div class="po-card-header"><i class="fas fa-history" style="margin-right: 8px; color: var(--text-muted);"></i>Purchase Order History</div>
+            <div class="po-card-body" style="padding: 1rem;">
+                <div style="margin-bottom: 1rem; position: relative;">
+                    <i class="fas fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    <input type="text" class="item-input" style="padding-left: 2.5rem; background-color: #f8fafc; border-color: transparent;" placeholder="Search history..." value="">
+                </div>
+                
+                <table class="item-table" style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr>
+                            <th style="padding: 0.5rem; text-align: left;">FILE NAME</th>
+                            <th style="padding: 0.5rem; text-align: left;">DATE</th>
+                            <th style="padding: 0.5rem; text-align: center;">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for po in recent_pos %}
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 0.75rem 0.5rem; font-size: 0.85rem; display: flex; align-items: center; gap: 0.5rem; word-break: break-all;">
+                                <i class="fas fa-file-pdf" style="color: #ef4444;"></i> {{ po.get('po_number', 'Old-PO') }}.pdf
+                            </td>
+                            <td style="padding: 0.75rem 0.5rem; font-size: 0.85rem; color: var(--text-muted);">
+                                {% if po.get('date_created') %}
+                                    {{ po.date_created.strftime('%Y-%m-%d %H:%M') }}
+                                {% elif po.get('date') %}
+                                    {{ po.date.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td style="padding: 0.75rem 0.5rem; text-align: center; white-space: nowrap;">
+                                <a href="{{ url_for('view_po', po_id=po._id) }}" style="background: none; border: none; color: var(--primary-color); cursor: pointer; margin-right: 0.5rem; text-decoration: none;"><i class="fas fa-eye"></i></a>
+                                <a href="{{ url_for('view_po', po_id=po._id) }}?print=true" target="_blank" style="background: none; border: none; color: var(--text-muted); cursor: pointer; margin-right: 0.5rem; text-decoration: none;"><i class="fas fa-download"></i></a>
+                                <form action="{{ url_for('delete_po', po_id=po._id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this Purchase Order?');">
+                                    <button type="submit" style="background: none; border: none; color: #ef4444; cursor: pointer;"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="3" style="text-align: center; padding: 2rem; color: var(--text-muted);">No recent POs found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PREVIEW MODAL -->
+<div id="previewModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto; padding: 2rem; box-sizing: border-box; backdrop-filter: blur(4px);">
+    <div style="max-width: 850px; margin: 0 auto; position: relative;">
+        <!-- Modal Controls -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="margin: 0; color: white; font-size: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5);">PO Preview</h3>
+            <div style="display: flex; gap: 1rem;">
+                <button type="button" class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 1rem; border-radius: 6px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2);" onclick="window.print()"><i class="fas fa-print" style="margin-right: 0.5rem;"></i>Print PDF</button>
+                <button type="button" onclick="closePreviewModal()" style="background: white; border: none; font-size: 1.5rem; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; color: #1e293b; box-shadow: 0 4px 6px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; transition: background 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='white'">&times;</button>
+            </div>
+        </div>
+        
+        <!-- The Actual Document -->
+        <div class="po-preview" id="print-area" style="box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border-radius: 8px; margin-bottom: 3rem;">
+            <div class="preview-header">
+                <div>
+                    <div class="preview-title" style="font-size: 2rem;">Business PO</div>
+                    <div style="color: #64748b; font-size: 0.9rem; margin-top: 0.5rem;">
+                        {{ global_settings.owner_name or 'Owner Name' }}<br>
+                        {{ global_settings.address or 'Company Address' }}
+                    </div>
+                </div>
+                <div class="preview-meta">
+                    <div style="font-size: 1.5rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem;">PURCHASE ORDER</div>
+                    <div>PO Number: <strong id="pv-po-num">{{ po_number }}</strong></div>
+                    <div>Date: <strong id="pv-date">---</strong></div>
+                    <div>Terms: <strong id="pv-terms">---</strong></div>
+                </div>
+            </div>
+            
+            <div class="preview-addresses">
+                <div class="preview-address-block">
+                    <h4>Vendor</h4>
+                    <strong id="pv-vendor" style="display: block; margin-bottom: 0.25rem;">Vendor Name</strong>
+                    <div id="pv-vendor-address" style="white-space: pre-line; margin-bottom: 0.25rem;">Vendor Address</div>
+                    <div id="pv-vendor-phone">Vendor Phone</div>
+                </div>
+                <div class="preview-address-block">
+                    <h4>Ship To</h4>
+                    <strong style="display: block; margin-bottom: 0.25rem;">{{ global_settings.business_name or 'Business PO Headquarters' }}</strong>
+                    <div id="pv-ship-to" style="white-space: pre-line;">Shipping Address</div>
+                </div>
+            </div>
+            
+            <table class="preview-table">
+                <thead>
+                    <tr>
+                        <th>Item / Description</th>
+                        <th style="text-align: center; width: 80px;">Qty</th>
+                        <th style="text-align: right; width: 120px;">Unit Price</th>
+                        <th style="text-align: right; width: 120px;">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="pv-table-body">
+                    <!-- Dynamic Rows -->
+                </tbody>
+            </table>
+            
+            <div style="display: flex; justify-content: flex-end;">
+                <div class="preview-totals">
+                    <div class="preview-total-row">
+                        <span>Subtotal</span>
+                        <span id="pv-subtotal">₹0.00</span>
+                    </div>
+                    <div class="preview-total-row">
+                        <span>Tax</span>
+                        <span id="pv-tax">₹0.00</span>
+                    </div>
+                    <div class="preview-total-row grand-total">
+                        <span>Total</span>
+                        <span id="pv-grand-total">₹0.00</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 4rem; border-top: 1px solid #e2e8f0; padding-top: 1.5rem;">
+                <strong style="color: #0f172a; font-size: 0.9rem; display: block; margin-bottom: 0.5rem;">Notes / Instructions</strong>
+                <div id="pv-notes" style="color: #64748b; font-size: 0.9rem; white-space: pre-line;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelector('input[name="po_date"]').valueAsDate = new Date();
+        attachEventListeners();
+        
+        // Vendor auto-population
+        const vendorSelect = document.getElementById('vendor-select');
+        if (vendorSelect) {
+            vendorSelect.addEventListener('change', function() {
+                const vendorId = this.value;
+                if (vendorId) {
+                    fetch('/api/vendor/' + vendorId)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                document.getElementById('vendor_address').value = data.address || '';
+                                document.getElementById('vendor_phone').value = data.phone || data.email || '';
+                            }
+                        })
+                        .catch(err => console.error('Error fetching vendor:', err));
+                }
+            });
+        }
+    });
+    
+    function attachEventListeners() {
+        const calcInputs = document.querySelectorAll('.row-calc');
+        calcInputs.forEach(input => {
+            input.removeEventListener('input', calculateTotals);
+            input.addEventListener('input', calculateTotals);
+        });
+        
+        const nameInputs = document.querySelectorAll('.item-name');
+        nameInputs.forEach(input => {
+            input.removeEventListener('input', checkDuplicates);
+            input.addEventListener('input', checkDuplicates);
+        });
+        
+        const removeBtns = document.querySelectorAll('.btn-remove');
+        removeBtns.forEach(btn => {
+            btn.removeEventListener('click', removeRow);
+            btn.addEventListener('click', removeRow);
+        });
+    }
+    
+    function addRow() {
+        const tbody = document.getElementById('po-items-tbody');
+        const rowCount = tbody.querySelectorAll('tr').length + 1;
+        
+        const tr = document.createElement('tr');
+        tr.className = 'po-row';
+        tr.innerHTML = `
+            <td><div class="row-number">${rowCount}</div></td>
+            <td>
+                <input type="text" name="item_name[]" class="item-input item-name" required>
+                <div class="error-text">This item already exists in another row</div>
+            </td>
+            <td><input type="text" name="description[]" class="item-input" placeholder="Optional"></td>
+            <td><input type="number" name="qty[]" class="item-input row-calc" value="1" min="1"></td>
+            <td><input type="number" name="unit_price[]" class="item-input row-calc" value="0" min="0" step="0.01"></td>
+            <td><input type="number" name="item_shipping[]" class="item-input row-calc" value="0" min="0" step="0.01"></td>
+            <td><input type="number" name="tax[]" class="item-input row-calc" value="0" min="0" step="0.01"></td>
+            <td style="vertical-align: middle; font-weight: bold;" class="row-total-text">0.00</td>
+            <td><button type="button" class="btn-remove"><i class="fas fa-times"></i></button></td>
+        `;
+        
+        tbody.appendChild(tr);
+        updateRowNumbers();
+        attachEventListeners();
+    }
+    
+    function removeRow(e) {
+        const row = e.target.closest('tr');
+        const tbody = document.getElementById('po-items-tbody');
+        if (tbody.querySelectorAll('tr').length > 1) {
+            row.remove();
+            updateRowNumbers();
+            calculateTotals();
+            checkDuplicates();
+        }
+    }
+    
+    function updateRowNumbers() {
+        const rows = document.querySelectorAll('.po-row');
+        rows.forEach((row, index) => {
+            row.querySelector('.row-number').textContent = index + 1;
+        });
+    }
+    
+    function calculateTotals() {
+        let globalSubtotal = 0;
+        let globalShipping = 0;
+        let globalTax = 0;
+        
+        const rows = document.querySelectorAll('.po-row');
+        rows.forEach(row => {
+            const qty = parseFloat(row.querySelector('input[name="qty[]"]').value) || 0;
+            const price = parseFloat(row.querySelector('input[name="unit_price[]"]').value) || 0;
+            const shipping = parseFloat(row.querySelector('input[name="item_shipping[]"]').value) || 0;
+            const taxPct = parseFloat(row.querySelector('input[name="tax[]"]').value) || 0;
+            
+            const subtotal = qty * price;
+            const taxAmount = subtotal * (taxPct / 100);
+            const rowTotal = subtotal + shipping + taxAmount;
+            
+            row.querySelector('.row-total-text').textContent = rowTotal.toFixed(2);
+            
+            globalSubtotal += subtotal;
+            globalShipping += shipping;
+            globalTax += taxAmount;
+        });
+        
+        document.getElementById('subtotal').value = globalSubtotal.toFixed(2);
+        document.getElementById('total_shipping').value = globalShipping.toFixed(2);
+        document.getElementById('total_tax').value = globalTax.toFixed(2);
+        
+        const grandTotal = globalSubtotal + globalShipping + globalTax;
+        document.getElementById('grand_total').value = grandTotal.toFixed(2);
+    }
+    
+    function checkDuplicates() {
+        const names = [];
+        const inputs = document.querySelectorAll('.item-name');
+        let hasError = false;
+        
+        inputs.forEach(input => {
+            const val = input.value.trim().toLowerCase();
+            const errorText = input.nextElementSibling;
+            
+            if (val && names.includes(val)) {
+                errorText.style.display = 'block';
+                input.style.borderColor = '#ef4444';
+                hasError = true;
+            } else {
+                errorText.style.display = 'none';
+                input.style.borderColor = '#cbd5e1';
+                if (val) names.push(val);
+            }
+        });
+        
+        const btnGenerate = document.getElementById('btn-generate');
+        if (hasError) {
+            btnGenerate.disabled = true;
+            btnGenerate.style.opacity = '0.5';
+            btnGenerate.style.cursor = 'not-allowed';
+        } else {
+            btnGenerate.disabled = false;
+            btnGenerate.style.opacity = '1';
+            btnGenerate.style.cursor = 'pointer';
+        }
+    }
+    
+    function submitAsDraft() {
+        document.getElementById('form-action').value = 'draft';
+        const form = document.getElementById('po-form');
+        form.submit();
+    }
+    function openPreviewModal() {
+        updatePreview();
+        document.getElementById('previewModal').style.display = 'block';
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+    }
+    
+    function closePreviewModal() {
+        document.getElementById('previewModal').style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+    
+    function updatePreview() {
+        // Date & Terms
+        const dateVal = document.querySelector('input[name="po_date"]').value;
+        document.getElementById('pv-date').textContent = dateVal ? new Date(dateVal).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '---';
+        document.getElementById('pv-terms').textContent = document.querySelector('select[name="payment_terms"]').value || '---';
+        
+        // Vendor Info
+        const vendorSelect = document.getElementById('vendor-select');
+        document.getElementById('pv-vendor').textContent = vendorSelect.options[vendorSelect.selectedIndex].text !== '-- Select Vendor --' ? vendorSelect.options[vendorSelect.selectedIndex].text : 'Vendor Name';
+        document.getElementById('pv-vendor-address').textContent = document.getElementById('vendor_address').value || 'Vendor Address';
+        document.getElementById('pv-vendor-phone').textContent = document.getElementById('vendor_phone').value || '';
+        
+        // Ship To Info
+        document.getElementById('pv-ship-to').textContent = document.getElementById('ship_to_address').value || 'Default Business Address';
+        
+        // Notes
+        document.getElementById('pv-notes').textContent = document.getElementById('notes').value || 'None';
+        
+        // Table Items
+        const tbody = document.getElementById('pv-table-body');
+        tbody.innerHTML = '';
+        
+        const rows = document.querySelectorAll('.po-row');
+        rows.forEach(row => {
+            const name = row.querySelector('input[name="item_name[]"]').value;
+            const desc = row.querySelector('input[name="description[]"]').value;
+            const qty = row.querySelector('input[name="qty[]"]').value;
+            const price = parseFloat(row.querySelector('input[name="unit_price[]"]').value || 0).toFixed(2);
+            
+            // Re-calculate row total using the textContent which is already calculated
+            const rowTotal = row.querySelector('.row-total-text').textContent;
+            
+            if (name) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>
+                        <strong style="display:block; color:#0f172a;">${name}</strong>
+                        ${desc ? `<span style="font-size:0.85rem;">${desc}</span>` : ''}
+                    </td>
+                    <td style="text-align: center;">${qty}</td>
+                    <td style="text-align: right;">₹${price}</td>
+                    <td style="text-align: right; font-weight:600;">₹${rowTotal}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        });
+        
+        // Totals
+        document.getElementById('pv-subtotal').textContent = '₹' + document.getElementById('subtotal').value;
+        document.getElementById('pv-tax').textContent = '₹' + document.getElementById('total_tax').value;
+        document.getElementById('pv-grand-total').textContent = '₹' + document.getElementById('grand_total').value;
+    }
+</script>
+{% endblock %}

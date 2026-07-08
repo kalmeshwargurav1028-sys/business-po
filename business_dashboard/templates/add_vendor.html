@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Add Vendor - Business Dashboard{% endblock %}
+{% block page_title %}Add Vendor{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <div class="card-header">
+        <h3 class="card-title">Register New Vendor</h3>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div style="padding: 1.5rem 1.5rem 0 1.5rem;">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" style="padding: 10px; margin-bottom: 15px; border-radius: 4px; background-color: {% if category == 'error' %}#fee2e2{% else %}#d1fae5{% endif %}; color: {% if category == 'error' %}#991b1b{% else %}#065f46{% endif %}; font-size: 0.9rem;">
+                    {{ message }}
+                </div>
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div style="padding: 1.5rem;">
+        <form method="POST" action="{{ url_for('add_vendor') }}">
+            <div class="form-group">
+                <label for="vendor_name">Vendor Name</label>
+                <input type="text" id="vendor_name" name="vendor_name" class="form-control" required placeholder="e.g. TechCorp Technologies">
+            </div>
+            
+            <div class="form-group">
+                <label for="vendor_email">Email Address</label>
+                <input type="email" id="vendor_email" name="vendor_email" class="form-control" required placeholder="contact@vendor.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="vendor_phone">Phone Number</label>
+                <input type="text" id="vendor_phone" name="vendor_phone" class="form-control" required placeholder="+1 234 567 8900">
+            </div>
+            
+            <div class="form-group">
+                <label for="vendor_address">Physical Address</label>
+                <textarea id="vendor_address" name="vendor_address" class="form-control" rows="3" required placeholder="Full business address"></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Save Vendor</button>
+                <a href="{{ url_for('create_po') }}" class="btn" style="flex: 1; border: 1px solid var(--border-color); color: var(--text-main);">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

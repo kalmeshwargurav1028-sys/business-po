@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Business Dashboard{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content { display: none; position: absolute; right: 0; background-color: white; min-width: 220px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); z-index: 9999; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; margin-top: 10px; }
+        .dropdown-content a, .dropdown-content .dropdown-item { color: #334155; padding: 12px 16px; text-decoration: none; display: block; font-size: 0.9rem; }
+        .dropdown-content a:hover, .dropdown-item:hover { background-color: #f8fafc; }
+        .show { display: block !important; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <i class="fas fa-file-invoice"></i> Business PO
+            </div>
+            <ul class="sidebar-nav">
+                <li><a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}" title="View your overall business health and stats"><i class="fas fa-tachometer-alt" style="width: 20px;"></i> Dashboard</a></li>
+                
+                <li>
+                    <a href="#" style="justify-content: space-between;">
+                        <span><i class="fas fa-file-invoice" style="width: 20px;"></i> Accounts</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
+                    </a>
+                    <ul class="sidebar-submenu" style="display: none;">
+                        <li><a href="{{ url_for('create_po') }}" class="{% if request.endpoint == 'create_po' %}active{% endif %}" title="Create a new Purchase Order to send to a vendor"><i class="fas fa-file-alt" style="width: 20px;"></i> Create PO</a></li>
+                        <li><a href="{{ url_for('submitted_pos') }}" class="{% if request.endpoint == 'submitted_pos' %}active{% endif %}" title="View all historical Purchase Orders"><i class="fas fa-paper-plane" style="width: 20px;"></i> Submitted PO</a></li>
+                        <li><a href="{{ url_for('create_invoice') }}" class="{% if request.endpoint == 'create_invoice' %}active{% endif %}" title="Generate a bill/invoice for your customers"><i class="fas fa-file-invoice-dollar" style="width: 20px;"></i> Create Invoice</a></li>
+                        <li><a href="{{ url_for('po_status') }}" class="{% if request.endpoint == 'po_status' %}active{% endif %}" title="Track the payment and delivery status of POs"><i class="fas fa-search" style="width: 20px;"></i> PO Status</a></li>
+                    </ul>
+                </li>
+                
+
+                
+                <li>
+                    <a href="#" style="justify-content: space-between;">
+                        <span><i class="fas fa-truck" style="width: 20px;"></i> Transport</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
+                    </a>
+                    <ul class="sidebar-submenu" style="display: none;">
+                        <li><a href="{{ url_for('transport') }}" class="{% if request.endpoint == 'transport' %}active{% endif %}" title="Track your courier shipments and delivery status"><i class="fas fa-route" style="width: 20px;"></i> Overview</a></li>
+                    </ul>
+                </li>
+                
+                <li>
+                    <a href="#" style="justify-content: space-between;">
+                        <span><i class="fas fa-boxes" style="width: 20px;"></i> Inventory</span>
+                        <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
+                    </a>
+                    <ul class="sidebar-submenu" style="display: none;">
+                        <li><a href="{{ url_for('inventory') }}" class="{% if request.endpoint == 'inventory' %}active{% endif %}" title="Manage your product catalog and stock levels"><i class="fas fa-warehouse" style="width: 20px;"></i> Stock</a></li>
+                    </ul>
+                </li>
+
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="topbar-title">
+                    {% block page_title %}Dashboard{% endblock %}
+                </div>
+                <div class="topbar-actions" style="display: flex; gap: 1.5rem; align-items: center;">
+                    <div class="dropdown">
+                        <i class="fas fa-bell text-muted" id="notifBtn" style="color: #64748b; font-size: 1.2rem; cursor: pointer; position: relative;">
+                            <span id="notifDot" style="position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%;"></span>
+                        </i>
+                        <div id="notifDropdown" class="dropdown-content" style="width: 300px;">
+                            <div style="padding: 12px 16px; font-weight: 600; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">Notifications</div>
+                            <div id="notifContainer">
+                                <div class="dropdown-item" style="border-bottom: 1px solid #e2e8f0; pointer-events: none;">
+                                    <div style="font-weight: 500; color: #1e293b;"><i class="fas fa-check-circle" style="color: #10b981; margin-right: 5px;"></i> Welcome!</div>
+                                    <div style="font-size: 0.8rem; color: #64748b; margin-top: 4px;">Your business dashboard is ready.</div>
+                                </div>
+                                <div class="dropdown-item" id="markReadBtn" style="text-align: center; color: #3b82f6; cursor: pointer; font-size: 0.85rem;">Mark all as read</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Profile Dropdown -->
+                    <div class="dropdown">
+                        <div id="profileBtn" style="background-color: var(--primary-color); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; cursor: pointer; user-select: none; overflow: hidden;">
+                            {% if session.get('user_photo') %}
+                                <img src="{{ url_for('static', filename='uploads/profiles/' + session.get('user_photo')) }}" style="width: 100%; height: 100%; object-fit: cover;">
+                            {% else %}
+                                {{ session.get('user_name', 'AD')[:2] | upper }}
+                            {% endif %}
+                        </div>
+                        <div id="profileDropdown" class="dropdown-content">
+                            <div style="padding: 12px 16px; border-bottom: 1px solid #e2e8f0; background: #f8fafc;">
+                                <div style="font-weight: 600; color: #1e293b;">{{ session.get('user_name', 'Administrator') }}</div>
+                                <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 4px;">{{ session.get('user_email', '') }}</div>
+                                <span style="display: inline-block; background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 999px; font-size: 0.7rem; font-weight: 600;">{{ session.get('user_role', 'Admin') }}</span>
+                            </div>
+                            <a href="{{ url_for('profile') }}"><i class="fas fa-user" style="width: 20px; color: #64748b;"></i> My Profile</a>
+                            <a href="{{ url_for('utility') }}"><i class="fas fa-cog" style="width: 20px; color: #64748b;"></i> Settings</a>
+                            <a href="{{ url_for('logout') }}" style="color: #ef4444;"><i class="fas fa-sign-out-alt" style="width: 20px;"></i> Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-wrapper">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Dropdown Logic
+            document.getElementById("notifBtn").addEventListener('click', function(e) {
+                e.stopPropagation();
+                document.getElementById("notifDropdown").classList.toggle("show");
+                document.getElementById("profileDropdown").classList.remove("show");
+            });
+            
+            document.getElementById("profileBtn").addEventListener('click', function(e) {
+                e.stopPropagation();
+                document.getElementById("profileDropdown").classList.toggle("show");
+                document.getElementById("notifDropdown").classList.remove("show");
+            });
+            
+            window.addEventListener('click', function(e) {
+                if (!e.target.matches('.dropdown-content') && !e.target.closest('.dropdown-content')) {
+                    document.getElementById("notifDropdown").classList.remove("show");
+                    document.getElementById("profileDropdown").classList.remove("show");
+                }
+            });
+
+            // Mark all as read logic
+            const markReadBtn = document.getElementById("markReadBtn");
+            if (markReadBtn) {
+                markReadBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const dot = document.getElementById('notifDot');
+                    if (dot) dot.style.display = 'none';
+                    
+                    const container = document.getElementById('notifContainer');
+                    if (container) {
+                        container.innerHTML = '<div class="dropdown-item" style="text-align: center; color: #64748b; padding: 1rem 0; pointer-events: none;">No new notifications</div>';
+                    }
+                });
+            }
+
+            // Find all sidebar links that have a chevron (dropdown indicators)
+            const dropdownLinks = document.querySelectorAll('.sidebar-nav > li > a');
+            
+            dropdownLinks.forEach(link => {
+                const chevron = link.querySelector('.fa-chevron-down, .fa-chevron-up');
+                if (chevron) {
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const submenu = this.nextElementSibling;
+                        
+                        // Toggle icon
+                        if (chevron.classList.contains('fa-chevron-down')) {
+                            chevron.classList.remove('fa-chevron-down');
+                            chevron.classList.add('fa-chevron-up');
+                        } else {
+                            chevron.classList.remove('fa-chevron-up');
+                            chevron.classList.add('fa-chevron-down');
+                        }
+                        
+                        // Toggle submenu if it exists
+                        if (submenu && submenu.classList.contains('sidebar-submenu')) {
+                            if (submenu.style.display === 'none') {
+                                submenu.style.display = 'block';
+                            } else {
+                                submenu.style.display = 'none';
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

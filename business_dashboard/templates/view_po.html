@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Order {{ po.get('po_number') }}</title>
+    <style>
+        body {
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            color: #1e293b;
+            margin: 0;
+            padding: 2rem;
+            background-color: #f8fafc;
+        }
+        .document-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 3rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e2e8f0;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 3rem;
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 1.5rem;
+        }
+        .company-info h1 {
+            color: #1e3a8a;
+            margin: 0 0 0.25rem 0;
+            font-size: 1.75rem;
+        }
+        .company-info p {
+            margin: 0;
+            color: #64748b;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .po-title {
+            text-align: right;
+        }
+        .po-title h2 {
+            margin: 0 0 0.5rem 0;
+            color: #1e293b;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .po-meta {
+            text-align: right;
+            font-size: 0.9rem;
+        }
+        .po-meta p {
+            margin: 0.25rem 0;
+        }
+        .po-meta strong {
+            display: inline-block;
+            width: 120px;
+            color: #64748b;
+        }
+        
+        .addresses {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        .address-box h3 {
+            font-size: 1rem;
+            color: #1e3a8a;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+        .address-box p {
+            margin: 0.25rem 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+        th {
+            background-color: #f1f5f9;
+            color: #334155;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 2px solid #cbd5e1;
+        }
+        td {
+            padding: 1rem 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.95rem;
+        }
+        
+        .totals {
+            width: 300px;
+            margin-left: auto;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            font-size: 0.95rem;
+        }
+        .total-row.final {
+            font-size: 1.25rem;
+            font-weight: 700;
+            border-top: 2px solid #1e293b;
+            padding-top: 1rem;
+            margin-top: 0.5rem;
+        }
+        
+        .notes {
+            margin-top: 3rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        .notes h4 {
+            color: #1e293b;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .print-btn {
+            display: block;
+            width: 200px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background-color: #2563eb;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        .print-btn:hover {
+            background-color: #1d4ed8;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .document-container {
+                box-shadow: none;
+                border: none;
+                padding: 0;
+                max-width: 100%;
+            }
+            .print-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <button class="print-btn" onclick="window.print()">Print / Save PDF</button>
+
+    <div class="document-container">
+        <div class="header">
+            <div class="company-info">
+                <h1>Business PO</h1>
+                <p>sumit houskar mal ankale<br>Idalhonda begaum, 591302</p>
+            </div>
+            <div class="po-title">
+                <h2>Purchase Order</h2>
+                <div class="po-meta">
+                    <p><strong>PO Number:</strong> {{ po.get('po_number') }}</p>
+                    <p><strong>Date:</strong> 
+                        {% if po.get('date_created') %}
+                            {{ po.date_created.strftime('%b %d, %Y') }}
+                        {% elif po.get('date') %}
+                            {{ po.date.strftime('%b %d, %Y') }}
+                        {% endif %}
+                    </p>
+                    <p><strong>Terms:</strong> {{ po.get('payment_terms', 'Net 30') }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="addresses">
+            <div class="address-box">
+                <h3>Vendor</h3>
+                <p><strong>{{ vendor.get('name') if vendor else 'Unknown Vendor' }}</strong></p>
+                <p>{{ vendor.get('address') if vendor and vendor.get('address') else 'N/A' }}</p>
+                <p>{{ vendor.get('phone') if vendor and vendor.get('phone') else '' }}</p>
+            </div>
+            <div class="address-box">
+                <h3>Ship To</h3>
+                <p><strong>Business PO Headquarters</strong></p>
+                <p>{% if po.get('ship_to') %}{{ po.ship_to }}{% else %}sumit houskar mal ankale<br>Idalhonda begaum, 591302{% endif %}</p>
+            </div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Item / Description</th>
+                    <th style="text-align: center;">Qty</th>
+                    <th style="text-align: right;">Unit Price</th>
+                    <th style="text-align: right;">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in po.get('items', []) %}
+                <tr>
+                    <td>
+                        <strong>{{ item.get('name', '') }}</strong>
+                        {% if item.get('description') %}
+                        <div style="font-size: 0.85rem; color: #64748b; margin-top: 0.25rem;">{{ item.get('description') }}</div>
+                        {% endif %}
+                    </td>
+                    <td style="text-align: center;">{{ item.get('qty', 1) }}</td>
+                    <td style="text-align: right;">₹{{ "%.2f"|format(item.get('price', 0)|float) }}</td>
+                    <td style="text-align: right;">₹{{ "%.2f"|format(item.get('total', 0)|float) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <div class="totals">
+            <div class="total-row">
+                <span>Subtotal</span>
+                <span>₹{{ "%.2f"|format(po.get('total', 0)|float) }}</span>
+            </div>
+            <div class="total-row final">
+                <span>Total</span>
+                <span>₹{{ "%.2f"|format(po.get('total', 0)|float) }}</span>
+            </div>
+        </div>
+        
+        <div class="notes">
+            <h4>Notes / Instructions</h4>
+            <p>{{ po.get('notes') if po.get('notes') else 'Please confirm receipt of this purchase order. All goods must be delivered by the expected delivery date.' }}</p>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('print')) {
+                // Slight delay to allow font rendering
+                setTimeout(function() {
+                    window.print();
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Under Construction - Business Dashboard{% endblock %}
+{% block page_title %}Under Construction{% endblock %}
+
+{% block content %}
+<div class="card" style="text-align: center; padding: 4rem 2rem;">
+    <i class="fas fa-hard-hat" style="font-size: 4rem; color: var(--primary-color); margin-bottom: 1.5rem;"></i>
+    <h2 style="margin-bottom: 1rem; color: var(--text-main);">Feature Coming Soon</h2>
+    <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 2rem auto;">
+        We are actively working on building this feature. Please check back later for updates!
+    </p>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-primary" style="width: auto;">Return to Dashboard</a>
+</div>
+{% endblock %}

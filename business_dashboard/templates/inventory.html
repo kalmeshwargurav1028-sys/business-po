@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory Stock - Business Dashboard{% endblock %}
+{% block page_title %}Inventory Stock{% endblock %}
+
+{% block content %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
+    }
+    .stat-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+    }
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+    .table-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+    }
+    .filter-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    .search-input {
+        padding: 0.65rem 1rem 0.65rem 2.5rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        width: 350px;
+        font-size: 0.95rem;
+        background-color: white;
+    }
+    .filter-select {
+        padding: 0.65rem 2rem 0.65rem 1rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        background-color: white;
+        min-width: 130px;
+    }
+    
+    .inv-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .inv-table th {
+        text-align: left;
+        padding: 1rem 0.5rem;
+        border-bottom: 1px solid #e2e8f0;
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+    .inv-table td {
+        padding: 1rem 0.5rem;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 0.95rem;
+        vertical-align: middle;
+    }
+    
+    .item-name {
+        font-weight: 600;
+        color: #0f172a;
+        margin-bottom: 0.25rem;
+    }
+    .item-sku {
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+    
+    /* Quantity Bar Styles */
+    .qty-cell {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .qty-number {
+        width: 25px;
+        font-weight: 500;
+    }
+    .qty-bar-bg {
+        width: 80px;
+        height: 6px;
+        background-color: #f1f5f9;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    .qty-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+    }
+    
+    .badge {
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+        text-align: center;
+    }
+    .badge-in-stock { background-color: #dcfce3; color: #166534; }
+    .badge-low-stock { background-color: #fef3c7; color: #b45309; }
+    .badge-out-stock { background-color: #fee2e2; color: #b91c1c; }
+    
+    .action-links {
+        display: flex;
+        gap: 0.75rem;
+    }
+    .action-link {
+        color: #64748b;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        transition: color 0.2s;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+    }
+    .action-link:hover {
+        color: var(--primary-color);
+    }
+</style>
+
+<!-- Top Stats -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Total Items</div>
+        <div class="stat-value">{{ total }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">In Stock</div>
+        <div class="stat-value">{{ in_stock }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Low Stock</div>
+        <div class="stat-value">{{ low_stock }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Out of Stock</div>
+        <div class="stat-value">{{ out_stock }}</div>
+    </div>
+</div>
+
+<!-- Table Card -->
+<div class="table-card">
+    <div class="filter-row">
+        <div style="position: relative;">
+            <i class="fas fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+            <input type="text" class="search-input" placeholder="Search by item name or SKU">
+        </div>
+        <div style="display: flex; gap: 1rem;">
+            <select class="filter-select">
+                <option>All Status</option>
+                <option>In Stock</option>
+                <option>Low Stock</option>
+                <option>Out of Stock</option>
+            </select>
+            <button class="btn btn-primary" style="width: auto; padding: 0.65rem 1.5rem;" onclick="document.getElementById('addModal').style.display='block'">
+                <i class="fas fa-plus"></i> Add Item
+            </button>
+        </div>
+    </div>
+
+    <table class="inv-table">
+        <thead>
+            <tr>
+                <th>ITEM</th>
+                <th>CATEGORY</th>
+                <th>QUANTITY</th>
+                <th>REORDER<br>LEVEL</th>
+                <th>UNIT<br>PRICE</th>
+                <th>STOCK<br>VALUE</th>
+                <th>STATUS</th>
+                <th>ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>
+                    <div class="item-name">{{ item.name }}</div>
+                    <div class="item-sku">{{ item.sku }}</div>
+                </td>
+                <td style="color: #475569;">{{ item.category }}</td>
+                <td>
+                    <div class="qty-cell">
+                        <div class="qty-number">{{ item.quantity }}</div>
+                        <div class="qty-bar-bg">
+                            {% set pct = 0 %}
+                            {% if item.quantity > 0 %}
+                                <!-- Calculate visual bar percentage, capped at 100% (assumes max expected qty is ~100) -->
+                                {% set pct = (item.quantity / 100) * 100 %}
+                                {% if pct > 100 %}{% set pct = 100 %}{% endif %}
+                            {% endif %}
+                            
+                            {% set bar_color = '#10b981' %}
+                            {% if item.status == 'Low Stock' %}
+                                {% set bar_color = '#f59e0b' %}
+                            {% elif item.status == 'Out of Stock' %}
+                                {% set bar_color = '#ef4444' %}
+                            {% endif %}
+                            
+                            <div class="qty-bar-fill" style="width: {{ pct }}%; background-color: {{ bar_color }};"></div>
+                        </div>
+                    </div>
+                </td>
+                <td style="color: #475569;">{{ item.reorder_level }}</td>
+                <td style="color: #475569;">₹{{ "%.2f"|format(item.unit_price|float) }}</td>
+                <td style="color: #475569;">₹{{ "%.2f"|format(item.stock_value|float) }}</td>
+                <td>
+                    <span class="badge 
+                        {% if item.status == 'In Stock' %}badge-in-stock
+                        {% elif item.status == 'Low Stock' %}badge-low-stock
+                        {% else %}badge-out-stock{% endif %}">
+                        {{ item.status }}
+                    </span>
+                </td>
+                <td>
+                    <div class="action-links">
+                        <button class="action-link" onclick="alert('Edit coming soon!')">Edit</button>
+                        <button class="action-link" onclick="alert('Reorder coming soon!')">Reorder</button>
+                        <form action="{{ url_for('delete_inventory', item_id=item._id) }}" method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this item?');">
+                            <button type="submit" class="action-link" style="color: var(--danger);">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                    No inventory items found. Click "+ Add Item" to create one.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Add Item Modal -->
+<div id="addModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="background: white; width: 500px; margin: 100px auto; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="margin: 0;">Add New Inventory Item</h3>
+            <button onclick="document.getElementById('addModal').style.display='none'" style="background: none; border: none; cursor: pointer; font-size: 1.2rem;">&times;</button>
+        </div>
+        <form action="{{ url_for('add_inventory') }}" method="POST">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #475569;">Item Name</label>
+                <input type="text" name="name" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #475569;">SKU</label>
+                    <input type="text" name="sku" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #475569;">Category</label>
+                    <input type="text" name="category" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #475569;">Quantity</label>
+                    <input type="number" name="quantity" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #475569;">Reorder Level</label>
+                    <input type="number" name="reorder_level" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: #475569;">Unit Price (₹)</label>
+                    <input type="number" step="0.01" name="unit_price" required style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box;">
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <button type="button" onclick="document.getElementById('addModal').style.display='none'" style="padding: 0.5rem 1rem; border: 1px solid #cbd5e1; background: white; border-radius: 4px; cursor: pointer; margin-right: 0.5rem;">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem;">Save Item</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

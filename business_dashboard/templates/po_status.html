@@ -1,0 +1,426 @@
+{% extends "base.html" %}
+
+{% block title %}PO Status - Business Dashboard{% endblock %}
+{% block page_title %}PO Status{% endblock %}
+
+{% block content %}
+<style>
+    .search-container {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    .search-input {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 1rem;
+    }
+    .btn-track {
+        padding: 0.75rem 2rem;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-track:hover {
+        background-color: var(--primary-hover);
+    }
+    .card-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    .po-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+    }
+    .po-number-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin: 0 0 0.5rem 0;
+    }
+    .vendor-name {
+        color: var(--text-muted);
+        font-size: 1.1rem;
+        margin: 0;
+    }
+    .badge {
+        padding: 0.35rem 1rem;
+        border-radius: 999px;
+        font-size: 0.9rem;
+        font-weight: 600;
+    }
+    .badge-pending { background-color: #fef3c7; color: #b45309; }
+    .badge-approved { background-color: #e0f2fe; color: #0369a1; }
+    .badge-delivered { background-color: #dcfce3; color: #166534; }
+    .badge-rejected { background-color: #fee2e2; color: #b91c1c; }
+    .badge-shipped { background-color: #f3e8ff; color: #7e22ce; }
+    
+    .progress-section {
+        margin-bottom: 2rem;
+    }
+    .progress-text {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-bottom: 0.5rem;
+    }
+    .progress-bar-bg {
+        height: 8px;
+        background-color: #f1f5f9;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    .progress-bar-fill {
+        height: 100%;
+        background-color: var(--primary-color);
+        transition: width 0.5s ease;
+    }
+    
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #e2e8f0;
+        margin-bottom: 2rem;
+    }
+    .stat-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 0.25rem;
+    }
+    .stat-val {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #1e293b;
+    }
+    
+    /* Vertical Timeline */
+    .timeline {
+        position: relative;
+        padding-left: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 5px;
+        top: 8px;
+        bottom: 8px;
+        width: 2px;
+        background-color: #e2e8f0;
+    }
+    .timeline-item {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    .timeline-item:last-child {
+        margin-bottom: 0;
+    }
+    .timeline-dot {
+        position: absolute;
+        left: -1.5rem;
+        top: 0.25rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: #e2e8f0;
+        border: 2px solid white;
+        box-shadow: 0 0 0 1px #cbd5e1;
+        z-index: 1;
+    }
+    .timeline-dot.completed {
+        background-color: var(--success);
+        box-shadow: 0 0 0 1px var(--success);
+    }
+    .timeline-dot.active {
+        background-color: var(--primary-color);
+        box-shadow: 0 0 0 2px var(--primary-color), 0 0 0 5px rgba(37,99,235,0.2);
+    }
+    .timeline-content h4 {
+        margin: 0 0 0.25rem 0;
+        font-size: 1rem;
+        color: #1e293b;
+    }
+    .timeline-content.future h4 {
+        color: #64748b;
+    }
+    .timeline-date {
+        font-size: 0.85rem;
+        color: #64748b;
+        margin-bottom: 0.25rem;
+    }
+    .timeline-desc {
+        font-size: 0.9rem;
+        color: #475569;
+    }
+    .timeline-content.future .timeline-desc {
+        color: #94a3b8;
+    }
+    
+    .actions-row {
+        display: flex;
+        gap: 1rem;
+    }
+    .btn-outline {
+        padding: 0.75rem 1.5rem;
+        background: white;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-weight: 600;
+        color: #334155;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-outline:hover {
+        background: #f8fafc;
+        border-color: #94a3b8;
+    }
+    
+    /* Recent POs List */
+    .recent-header {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: #64748b;
+        margin-bottom: 1rem;
+        padding-top: 1rem;
+    }
+    .recent-list {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        border: 1px solid #e2e8f0;
+    }
+    .recent-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .recent-item:last-child {
+        border-bottom: none;
+    }
+    .recent-link {
+        color: var(--primary-color);
+        font-weight: 600;
+        text-decoration: none;
+        width: 150px;
+    }
+    .recent-link:hover {
+        text-decoration: underline;
+    }
+    .recent-vendor {
+        flex: 1;
+        color: #334155;
+    }
+</style>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <div style="margin-bottom: 1rem;">
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}" style="padding: 10px; border-radius: 4px; background-color: {% if category == 'error' %}#fee2e2{% else %}#d1fae5{% endif %}; color: {% if category == 'error' %}#991b1b{% else %}#065f46{% endif %};">
+                {{ message }}
+            </div>
+        {% endfor %}
+        </div>
+    {% endif %}
+{% endwith %}
+
+<!-- Search Container -->
+<form action="{{ url_for('po_status') }}" method="GET" class="search-container">
+    <input type="text" name="q" class="search-input" placeholder="PO-2026-0007" value="{{ search_query }}">
+    <button type="submit" class="btn-track">Track PO</button>
+</form>
+
+{% if active_po %}
+<!-- Main Card -->
+<div class="card-container">
+    <div class="po-header">
+        <div>
+            <h2 class="po-number-title">{{ active_po.get('po_number', 'Old PO') }}</h2>
+            <p class="vendor-name">{{ active_po.vendor_name }}</p>
+        </div>
+        <div>
+            <span class="badge 
+                {% if active_po.display_status == 'Pending' %}badge-pending
+                {% elif active_po.display_status == 'Approved' %}badge-approved
+                {% elif active_po.display_status == 'Shipped' %}badge-shipped
+                {% elif active_po.display_status == 'Delivered' %}badge-delivered
+                {% else %}badge-rejected{% endif %}">
+                {{ active_po.display_status }}
+            </span>
+        </div>
+    </div>
+    
+    {% set step = active_po.tracking_step %}
+    {% set pct = (step - 1) * 25 %}
+    <div class="progress-section">
+        <div class="progress-text">
+            <span>{{ pct }}% complete</span>
+            <span>{{ step }} of 5 steps</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill" style="width: {{ pct }}%;"></div>
+        </div>
+    </div>
+    
+    <div class="stats-row">
+        <div>
+            <div class="stat-label">Amount</div>
+            <div class="stat-val">₹{{ "%.2f"|format(active_po.total|float) if active_po.total else "0.00" }}</div>
+        </div>
+        <div>
+            <div class="stat-label">Date Submitted</div>
+            <div class="stat-val">
+                {% if active_po.get('date_created') %}
+                    {{ active_po.date_created.strftime('%d %b %Y') }}
+                {% elif active_po.get('date') %}
+                    {{ active_po.date.strftime('%d %b %Y') }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+        </div>
+        <div>
+            <div class="stat-label">Expected Delivery</div>
+            <div class="stat-val">
+                <!-- For mockup purposes, assuming delivery is 10 days after creation -->
+                {% if active_po.get('date_created') %}
+                    <!-- We'll just display a static string here based on creation if possible, or fallback -->
+                    15 Jul 2026
+                {% else %}
+                    TBD
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="timeline">
+        <!-- Step 1 -->
+        <div class="timeline-item">
+            <div class="timeline-dot {% if step >= 1 %}completed{% endif %}"></div>
+            <div class="timeline-content">
+                <h4>PO Created</h4>
+                {% if step >= 1 %}
+                    <div class="timeline-date">Purchase order drafted by Admin</div>
+                {% else %}
+                    <div class="timeline-desc">Not yet</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Step 2 -->
+        <div class="timeline-item">
+            <div class="timeline-dot {% if step > 2 %}completed{% elif step == 2 %}active{% endif %}"></div>
+            <div class="timeline-content {% if step < 2 %}future{% endif %}">
+                <h4>Submitted to Vendor</h4>
+                {% if step >= 2 %}
+                    <div class="timeline-date">Sent to vendor for confirmation</div>
+                {% else %}
+                    <div class="timeline-desc">Not yet</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Step 3 -->
+        <div class="timeline-item">
+            <div class="timeline-dot {% if step > 3 %}completed{% elif step == 3 %}active{% endif %}"></div>
+            <div class="timeline-content {% if step < 3 %}future{% endif %}">
+                <h4>Vendor Approval</h4>
+                {% if step >= 3 %}
+                    <div class="timeline-date">Approved by Vendor</div>
+                {% elif step == 2 %}
+                    <div class="timeline-date" style="color: #b45309;">Pending</div>
+                    <div class="timeline-desc">Awaiting vendor confirmation</div>
+                {% else %}
+                    <div class="timeline-desc">Not yet</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Step 4 -->
+        <div class="timeline-item">
+            <div class="timeline-dot {% if step > 4 %}completed{% elif step == 4 %}active{% endif %}"></div>
+            <div class="timeline-content {% if step < 4 %}future{% endif %}">
+                <h4>Shipped</h4>
+                {% if step >= 4 %}
+                    <div class="timeline-date">Order has been shipped</div>
+                {% else %}
+                    <div class="timeline-desc">Not yet</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Step 5 -->
+        <div class="timeline-item">
+            <div class="timeline-dot {% if step >= 5 %}completed{% endif %}"></div>
+            <div class="timeline-content {% if step < 5 %}future{% endif %}">
+                <h4>Delivered</h4>
+                {% if step >= 5 %}
+                    <div class="timeline-date">Order has been delivered successfully</div>
+                {% else %}
+                    <div class="timeline-desc">Not yet</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="actions-row">
+        {% if step < 5 %}
+        <form action="{{ url_for('update_po_status', po_id=active_po._id) }}" method="POST">
+            <button type="submit" class="btn btn-primary" style="width: auto;">
+                Mark "{% if step == 1 %}Submit to Vendor{% elif step == 2 %}Vendor Approval{% elif step == 3 %}Shipped{% elif step == 4 %}Delivered{% endif %}" Complete
+            </button>
+        </form>
+        {% endif %}
+        <button class="btn-outline">Contact Vendor</button>
+        <button class="btn-outline">Print / Export Status</button>
+    </div>
+</div>
+{% else %}
+<div class="card-container" style="text-align: center; padding: 4rem;">
+    <h3 style="color: var(--text-muted);">No Purchase Orders found.</h3>
+</div>
+{% endif %}
+
+<!-- Recent POs -->
+<div class="recent-header">Recently viewed</div>
+<div class="recent-list">
+    {% for rpo in recent_pos %}
+    <div class="recent-item">
+        <a href="{{ url_for('po_status', q=rpo.get('po_number')) }}" class="recent-link">{{ rpo.get('po_number', 'Old PO') }}</a>
+        <div class="recent-vendor">{{ rpo.vendor_name }}</div>
+        <div>
+            <span class="badge 
+                {% if rpo.display_status == 'Pending' %}badge-pending
+                {% elif rpo.display_status == 'Approved' %}badge-approved
+                {% elif rpo.display_status == 'Shipped' %}badge-shipped
+                {% elif rpo.display_status == 'Delivered' %}badge-delivered
+                {% else %}badge-rejected{% endif %}">
+                {{ rpo.display_status }}
+            </span>
+        </div>
+    </div>
+    {% else %}
+    <div class="recent-item" style="justify-content: center; color: var(--text-muted);">
+        No recent POs available.
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
