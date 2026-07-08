@@ -740,6 +740,24 @@ def update_role(user_id):
     flash('User role updated successfully!', 'success')
     return redirect(url_for('users'))
 
+@app.route('/delete-user/<user_id>', methods=['POST'])
+@admin_required
+def delete_user(user_id):
+    if not session.get('logged_in'):
+        return redirect(url_for('login'))
+        
+    from bson.objectid import ObjectId
+    try:
+        if str(session.get('user_id')) == str(user_id):
+            flash('You cannot delete your own account.', 'error')
+            return redirect(url_for('users'))
+            
+        users_collection.delete_one({'_id': ObjectId(user_id)})
+        flash('User deleted successfully.', 'success')
+    except Exception as e:
+        flash(f'Failed to delete user: {str(e)}', 'error')
+    return redirect(url_for('users'))
+
 @app.route('/update-permissions/<user_id>', methods=['POST'])
 @admin_required
 def update_permissions(user_id):
