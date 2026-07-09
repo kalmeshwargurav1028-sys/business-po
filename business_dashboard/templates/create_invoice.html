@@ -210,7 +210,7 @@
         
         <!-- Modal Controls (Not printed) -->
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;" class="no-print">
-            <h3 style="margin: 0; color: #1a1a1a; font-size: 1.5rem;">Document Preview</h3>
+            <h3 style="margin: 0; color: #1e40af; font-size: 1.5rem;">Document Preview</h3>
             <div style="display: flex; gap: 1rem;">
                 <button type="button" class="btn btn-primary" style="padding: 0.5rem 1.5rem; font-size: 1rem; border-radius: 6px; cursor: pointer; background-color: #2563eb; color: white; border: none;" onclick="window.print()"><i class="fas fa-print" style="margin-right: 0.5rem;"></i>Print PDF</button>
                 <button type="button" onclick="closePreviewModal()" style="background: #f1f5f9; border: none; font-size: 1.5rem; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; color: #1e293b; display: flex; align-items: center; justify-content: center;">&times;</button>
@@ -221,7 +221,7 @@
         <style>
             .print-area {
                 font-family: Arial, sans-serif;
-                color: #1a1a1a;
+                color: #1e40af;
             }
             .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
             .header-left { display: flex; flex-direction: column; gap: 4px; }
@@ -231,26 +231,26 @@
             .header-right { text-align: right; display: flex; flex-direction: column; gap: 6px; }
             .doc-title { font-size: 1.8rem; font-weight: bold; text-transform: uppercase; margin: 0 0 10px 0; letter-spacing: 1px; color: #374151; }
             .meta-text { font-size: 0.95rem; color: #1f2937; font-weight: 500; }
-            .divider { border-top: 2px solid #1a1a1a; margin: 20px 0 30px 0; }
+            .divider { border-top: 2px solid #1e40af; margin: 20px 0 30px 0; }
             .vendor-section-title { font-size: 1rem; font-weight: bold; margin: 0 0 10px 0; text-transform: uppercase; }
-            .vendor-box { background-color: #f3f4f6; border-left: 4px solid #1a1a1a; padding: 15px 20px; margin-bottom: 30px; }
+            .vendor-box { background-color: #eff6ff; border-left: 4px solid #1e40af; padding: 15px 20px; margin-bottom: 30px; }
             .vendor-name { font-weight: bold; font-size: 1rem; margin: 0 0 5px 0; text-transform: uppercase; }
             .vendor-address { font-size: 0.9rem; color: #4b5563; margin: 0; }
             .order-details-title { font-size: 1.1rem; font-weight: bold; margin: 0 0 10px 0; }
             .preview-table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
-            .preview-table th { background-color: #1a1a1a !important; color: white !important; font-size: 0.85rem; text-align: left; padding: 8px; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .preview-table th { background-color: #1e40af !important; color: white !important; font-size: 0.85rem; text-align: left; padding: 8px; font-weight: bold; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .preview-table td { padding: 8px; font-size: 0.85rem; border-bottom: 1px solid #e5e7eb; }
             .totals-container { display: flex; justify-content: flex-end; margin-bottom: 30px; }
             .totals-box { width: 300px; }
-            .totals-row { display: flex; justify-content: space-between; padding: 6px 10px; font-size: 0.9rem; background-color: #f3f4f6 !important; margin-bottom: 2px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .totals-row { display: flex; justify-content: space-between; padding: 6px 10px; font-size: 0.9rem; background-color: #eff6ff !important; margin-bottom: 2px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .totals-row.final { font-weight: bold; }
-            .amount-words-box { background-color: #f3f4f6 !important; border-left: 4px solid #1a1a1a; padding: 10px 15px; font-size: 0.9rem; margin-bottom: 40px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .amount-words-box { background-color: #eff6ff !important; border-left: 4px solid #1e40af; padding: 10px 15px; font-size: 0.9rem; margin-bottom: 40px; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .terms-section { margin-bottom: 40px; }
             .terms-title { font-weight: bold; font-size: 1rem; margin: 0 0 10px 0; }
             .terms-list { list-style: none; padding: 0; margin: 0; font-size: 0.85rem; color: #4b5563; line-height: 1.6; }
             .signature-section { display: flex; justify-content: flex-end; margin-top: 60px; }
             .signature-box { text-align: right; width: 300px; }
-            .signature-line { border-top: 1px solid #1a1a1a; margin-bottom: 10px; }
+            .signature-line { border-top: 1px solid #1e40af; margin-bottom: 10px; }
             .signature-name { font-weight: bold; font-size: 1rem; margin: 0 0 5px 0; }
             @media print {
                 body * { visibility: hidden; }
@@ -264,10 +264,10 @@
             <!-- HEADER -->
             <div class="header-top">
                 <div class="header-left">
-                    <div class="company-name">INDUS INTERNATIONAL SCHOOL</div>
-                    <div class="company-subtitle">Eagle Robot Lab</div>
-                    <p class="company-address">Billapura, Cross, Sarjapura - Attibele Rd, Sarjapura, Bengaluru, Karnataka 562125</p>
-                    <p class="company-phone">Phone: +91 80-2289-5900, +91 80-2289-5990</p>
+                    <div class="company-name">{{ global_settings.business_name if global_settings else "BUSINESS PO" }}</div>
+                    
+                    <p class="company-address">{{ global_settings.address if global_settings else "Company Address" }}</p>
+                    <p class="company-phone">{{ global_settings.phone if global_settings else "Phone Number" }}</p>
                 </div>
                 <div class="header-right">
                     <h1 class="doc-title" id="pv-doc-title">INVOICE</h1>

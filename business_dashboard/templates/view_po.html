@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            color: #1a1a1a;
+            color: #1e40af;
             margin: 0;
             padding: 2rem;
             background-color: #f8fafc;
@@ -75,7 +75,7 @@
         
         /* DIVIDER */
         .divider {
-            border-top: 2px solid #1a1a1a;
+            border-top: 2px solid #1e40af;
             margin: 20px 0 30px 0;
         }
         
@@ -87,8 +87,8 @@
             text-transform: uppercase;
         }
         .vendor-box {
-            background-color: #f3f4f6;
-            border-left: 4px solid #1a1a1a;
+            background-color: #eff6ff;
+            border-left: 4px solid #1e40af;
             padding: 15px 20px;
             margin-bottom: 30px;
         }
@@ -116,7 +116,7 @@
             margin-bottom: 10px;
         }
         th {
-            background-color: #1a1a1a;
+            background-color: #1e40af;
             color: white;
             font-size: 0.85rem;
             text-align: left;
@@ -143,7 +143,7 @@
             justify-content: space-between;
             padding: 6px 10px;
             font-size: 0.9rem;
-            background-color: #f3f4f6;
+            background-color: #eff6ff;
             margin-bottom: 2px;
         }
         .totals-row.final {
@@ -152,8 +152,8 @@
         
         /* AMOUNT IN WORDS */
         .amount-words-box {
-            background-color: #f3f4f6;
-            border-left: 4px solid #1a1a1a;
+            background-color: #eff6ff;
+            border-left: 4px solid #1e40af;
             padding: 10px 15px;
             font-size: 0.9rem;
             margin-bottom: 40px;
@@ -188,7 +188,7 @@
             width: 300px;
         }
         .signature-line {
-            border-top: 1px solid #1a1a1a;
+            border-top: 1px solid #1e40af;
             margin-bottom: 10px;
         }
         .signature-name {
@@ -247,10 +247,10 @@
         <!-- HEADER -->
         <div class="header-top">
             <div class="header-left">
-                <div class="company-name">INDUS INTERNATIONAL SCHOOL</div>
-                <div class="company-subtitle">Eagle Robot Lab</div>
-                <p class="company-address">Billapura, Cross, Sarjapura - Attibele Rd, Sarjapura, Bengaluru, Karnataka 562125</p>
-                <p class="company-phone">Phone: +91 80-2289-5900, +91 80-2289-5990</p>
+                <div class="company-name">{{ global_settings.business_name if global_settings else "BUSINESS PO" }}</div>
+                
+                <p class="company-address">{{ global_settings.address if global_settings else "Company Address" }}</p>
+                <p class="company-phone">{{ global_settings.phone if global_settings else "Phone Number" }}</p>
             </div>
             
             <div class="header-right">
