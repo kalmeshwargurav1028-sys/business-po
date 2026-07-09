@@ -198,6 +198,11 @@
         gap: 1.5rem;
         align-items: start;
     }
+    .layout-center {
+        max-width: 950px;
+        margin: 0 auto;
+        width: 100%;
+    }
     @media (max-width: 1200px) {
         .layout-2col {
             grid-template-columns: 1fr;
@@ -217,7 +222,10 @@
     {% endif %}
 {% endwith %}
 
-<div class="layout-2col">
+{% set show_stats = session.get('user_role') == 'Admin' or session.get('user_permissions', {}).get('view_financials') %}
+{% set show_history = session.get('user_role') == 'Admin' or session.get('user_permissions', {}).get('view_pos') %}
+
+<div class="{% if show_stats or show_history %}layout-2col{% else %}layout-center{% endif %}">
     <!-- LEFT COLUMN: Generator -->
     <div class="left-col">
         <form method="POST" action="{{ url_for('create_po') }}" id="po-form">
@@ -372,8 +380,9 @@
     </div>
     
     <!-- RIGHT COLUMN: Stats & History -->
+    {% if show_stats or show_history %}
     <div class="right-col">
-        {% if session.get('user_role') == 'Admin' or session.get('user_permissions', {}).get('view_financials') %}
+        {% if show_stats %}
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
             <!-- Stat Card 1 -->
             <div class="po-card" style="margin-bottom: 0;">
@@ -402,7 +411,7 @@
         </div>
         {% endif %}
         
-        {% if session.get('user_role') == 'Admin' or session.get('user_permissions', {}).get('view_pos') %}
+        {% if show_history %}
         <!-- Purchase Order History -->
         <div class="po-card" style="margin-bottom: 0; min-height: 500px;">
             <div class="po-card-header"><i class="fas fa-history" style="margin-right: 8px; color: var(--text-muted);"></i>Purchase Order History</div>
@@ -455,6 +464,7 @@
         </div>
         {% endif %}
     </div>
+    {% endif %}
 </div>
 
 <!-- PREVIEW MODAL -->
