@@ -45,6 +45,16 @@ def permission_required(permission_name):
 
 def log_activity(action, details=""):
     if not session.get('user_id'): return
+    
+    device_info = "Unknown"
+    try:
+        if request.user_agent:
+            browser = request.user_agent.browser.capitalize() if request.user_agent.browser else "Unknown Browser"
+            platform = request.user_agent.platform.capitalize() if request.user_agent.platform else "Unknown OS"
+            device_info = f"{browser} ({platform})"
+    except:
+        pass
+
     activity_collection.insert_one({
         'user_id': session.get('user_id'),
         'user_name': session.get('user_name', 'Unknown'),
@@ -52,6 +62,7 @@ def log_activity(action, details=""):
         'role': session.get('user_role', 'Employee'),
         'action': action,
         'details': details,
+        'device': device_info,
         'timestamp': datetime.datetime.now()
     })
 
@@ -910,8 +921,46 @@ def activity():
     if not session.get('logged_in'):
         return redirect(url_for('login'))
         
-    logs = list(activity_collection.find().sort('timestamp', -1).limit(200))
-    return render_template('activity.html', logs=logs)
+    user_filter = request.args.get('user_filter', '').strip()
+    date_filter = request.args.get('date_filter', '').strip()
+    action_type = request.args.get('action_type', '').strip()
+    search = request.args.get('search', '').strip()
+    
+    query = {}
+    
+    if user_filter:
+        query['user_name'] = {'$regex': user_filter, '$options': 'i'}
+        
+    if action_type:
+        query['action'] = {'$regex': action_type, '$options': 'i'}
+        
+    if search:
+        query['$or'] = [
+            {'action': {'$regex': search, '$options': 'i'}},
+            {'details': {'$regex': search, '$options': 'i'}},
+            {'device': {'$regex': search, '$options': 'i'}}
+        ]
+        
+    # Optional: implement date filter logic here if needed for exact dates
+    
+    page = int(request.args.get('page', 1))
+    per_page = 20
+    skip = (page - 1) * per_page
+    
+    total_logs = activity_collection.count_documents(query)
+    import math
+    total_pages = math.ceil(total_logs / per_page) if total_logs > 0 else 1
+    
+    logs = list(activity_collection.find(query).sort('timestamp', -1).skip(skip).limit(per_page))
+    
+    return render_template('activity.html', 
+                           logs=logs, 
+                           page=page, 
+                           total_pages=total_pages,
+                           user_filter=user_filter,
+                           date_filter=date_filter,
+                           action_type=action_type,
+                           search=search)
 
 @app.route('/utility')
 @admin_required
