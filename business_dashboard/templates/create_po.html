@@ -373,6 +373,7 @@
     
     <!-- RIGHT COLUMN: Stats & History -->
     <div class="right-col">
+        {% if session.get('user_role') == 'Admin' or session.get('user_permissions', {}).get('view_financials') %}
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
             <!-- Stat Card 1 -->
             <div class="po-card" style="margin-bottom: 0;">
@@ -399,7 +400,9 @@
                 </div>
             </div>
         </div>
+        {% endif %}
         
+        {% if session.get('user_role') == 'Admin' or session.get('user_permissions', {}).get('view_pos') %}
         <!-- Purchase Order History -->
         <div class="po-card" style="margin-bottom: 0; min-height: 500px;">
             <div class="po-card-header"><i class="fas fa-history" style="margin-right: 8px; color: var(--text-muted);"></i>Purchase Order History</div>
@@ -450,6 +453,7 @@
                 
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 
