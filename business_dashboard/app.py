@@ -274,7 +274,6 @@ def verify_otp():
             session['user_phone'] = user_data['phone']
             if db_user:
                 session['user_photo'] = db_user.get('photo', '')
-                session['user_photo_base64'] = db_user.get('photo_base64', '')
             session['user_permissions'] = user_data.get('permissions', {})
             log_activity('Logged In', 'User authenticated successfully')
             
