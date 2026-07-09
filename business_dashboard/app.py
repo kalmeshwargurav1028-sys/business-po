@@ -102,7 +102,7 @@ app = Flask(__name__,
             static_folder=os.path.join(BASE_DIR, 'static'))
 import secrets
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
-app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_SECURE'] = False
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static/uploads/profiles')
