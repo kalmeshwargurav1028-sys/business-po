@@ -100,7 +100,11 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__, 
             template_folder=os.path.join(BASE_DIR, 'templates'),
             static_folder=os.path.join(BASE_DIR, 'static'))
-app.secret_key = 'business_dashboard_secret'
+import secrets
+app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['UPLOAD_FOLDER'] = os.path.join(BASE_DIR, 'static/uploads/profiles')
 try:
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
@@ -150,6 +154,18 @@ def process_login_request(template_name, expected_login_type):
         password = request.form.get('password')
         login_type = request.form.get('login_type', expected_login_type)
         
+        # Brute Force Protection Check
+        fifteen_mins_ago = datetime.datetime.now() - datetime.timedelta(minutes=15)
+        failed_attempts = activity_collection.count_documents({
+            'action': 'Login Failed',
+            'user_email': email,
+            'timestamp': {'$gte': fifteen_mins_ago}
+        })
+        
+        if failed_attempts >= 5:
+            flash('Too many failed login attempts. Please try again after 15 minutes.', 'error')
+            return render_template(template_name)
+        
         try:
             user = users_collection.find_one({'email': email})
         except Exception as e:
@@ -188,6 +204,26 @@ def process_login_request(template_name, expected_login_type):
             send_otp_email(email, otp)
             return redirect(url_for('verify_otp'))
         else:
+            # Log failure to activity_collection
+            device_info = "Unknown"
+            try:
+                if request.user_agent:
+                    browser = request.user_agent.browser.capitalize() if request.user_agent.browser else "Unknown Browser"
+                    platform = request.user_agent.platform.capitalize() if request.user_agent.platform else "Unknown OS"
+                    device_info = f"{browser} ({platform})"
+            except:
+                pass
+                
+            activity_collection.insert_one({
+                'user_id': None,
+                'user_name': 'Unknown',
+                'user_email': email,
+                'role': 'Unknown',
+                'action': 'Login Failed',
+                'details': f'Invalid password (attempt {failed_attempts + 1})',
+                'device': device_info,
+                'timestamp': datetime.datetime.now()
+            })
             flash('Invalid email or password', 'error')
             
     return render_template(template_name)
