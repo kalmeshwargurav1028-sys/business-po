@@ -1028,7 +1028,7 @@ def update_profile():
     photo_base64 = request.form.get('photo_base64')
     if photo_base64:
         update_data['photo_base64'] = photo_base64
-        session['user_photo_base64'] = photo_base64
+        session['has_custom_avatar'] = True
 
     # Update database
     users_collection.update_one({'_id': ObjectId(user_id)}, {'$set': update_data})
@@ -1120,3 +1120,25 @@ def update_task(task_id):
 if __name__ == '__main__':
     print("Local server URL: http://127.0.0.1:4000")
     app.run(debug=True, port=4000)
+
+
+@app.route('/api/user-avatar/<user_id>')
+def user_avatar(user_id):
+    from bson.objectid import ObjectId
+    try:
+        user = users_collection.find_one({'_id': ObjectId(user_id)})
+        if user and user.get('photo_base64'):
+            # photo_base64 is like data:image/jpeg;base64,/9j/4AAQSkZJRg...
+            # We can just redirect to it or return it as a direct response
+            # Actually, returning a data URI directly in an img src is usually done in the HTML
+            # But since we want to serve it, we can parse it and return bytes.
+            import base64
+            data_uri = user['photo_base64']
+            header, encoded = data_uri.split(",", 1)
+            mime_type = header.split(":")[1].split(";")[0]
+            image_data = base64.b64decode(encoded)
+            from flask import Response
+            return Response(image_data, mimetype=mime_type)
+    except:
+        pass
+    return "", 404
