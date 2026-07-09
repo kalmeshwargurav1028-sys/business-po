@@ -190,10 +190,10 @@ def process_login_request(template_name, expected_login_type):
                 'id': str(user['_id']),
                 'name': user['name'],
                 'email': user.get('email', ''),
-                'role': user.get('role', 'Admin'),
+                'role': user.get('role', 'Employee'),
                 'phone': user.get('phone', ''),
                 'permissions': user.get('permissions', {
-                    'dashboard': False, 'create_po': False, 'view_pos': False,
+                    'dashboard': True, 'create_po': False, 'view_pos': False,
                     'create_invoice': False, 'inventory': False, 'transport': False, 'delete_data': False, 'view_financials': False
                 })
             }
