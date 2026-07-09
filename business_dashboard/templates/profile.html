@@ -146,7 +146,7 @@
         display: none;
         align-items: center;
         justify-content: center;
-        z-index: 1000;
+        z-index: 9999;
         backdrop-filter: blur(4px);
     }
     .cropper-modal.active {
@@ -172,6 +172,7 @@
         font-size: 1.2rem;
     }
     .cropper-wrapper-inner {
+        position: relative;
         width: 100%;
         height: 400px; /* Fixed height for cropper */
         background: #e2e8f0;
@@ -181,6 +182,7 @@
     .cropper-wrapper-inner img {
         display: block;
         max-width: 100%;
+        max-height: 100%;
     }
     .cropper-footer {
         display: flex;
