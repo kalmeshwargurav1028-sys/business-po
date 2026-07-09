@@ -79,10 +79,10 @@ def send_otp_email_async(to_email, otp_code):
         print(f"Failed to send email: {e}")
 
 def send_otp_email(to_email, otp_code):
-    # Run the email sending in a background thread to prevent slow login page loads
-    thread = threading.Thread(target=send_otp_email_async, args=(to_email, otp_code))
-    thread.daemon = True
-    thread.start()
+    # Vercel is a serverless environment which freezes the execution context
+    # once the HTTP response is returned. Background threads will be paused,
+    # causing emails to fail. We must send the email synchronously.
+    send_otp_email_async(to_email, otp_code)
     return True
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
