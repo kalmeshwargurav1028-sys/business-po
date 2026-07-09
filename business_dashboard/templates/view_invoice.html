@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purchase Order {{ po.get('po_number') }}</title>
+    <title>Invoice {{ inv.get('invoice_number') }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -254,17 +254,17 @@
             </div>
             
             <div class="header-right">
-                <h1 class="doc-title">PURCHASE ORDER</h1>
+                <h1 class="doc-title">INVOICE</h1>
                 <div class="meta-text">Date: 
-                    {% if po.get('date_created') %}
-                        {{ po.date_created.strftime('%Y-%m-%d') }}
-                    {% elif po.get('date') %}
-                        {{ po.date.strftime('%Y-%m-%d') }}
+                    {% if inv.get('date_created') %}
+                        {{ inv.date_created.strftime('%Y-%m-%d') }}
+                    {% elif inv.get('date') %}
+                        {{ inv.date.strftime('%Y-%m-%d') }}
                     {% else %}
-                        {{ po.get('po_date', 'N/A') }}
+                        {{ inv.get('inv.date', 'N/A') }}
                     {% endif %}
                 </div>
-                <div class="meta-text">PO #: {{ po.get('po_number') }}</div>
+                <div class="meta-text">INVOICE #: {{ inv.get('po_number') }}</div>
             </div>
         </div>
         
@@ -293,7 +293,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for item in po.get('items', []) %}
+                {% for item in inv.get('items', []) %}
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td>{{ item.get('name', '') }}</td>
@@ -313,7 +313,7 @@
                 {% set subtotal = 0 %}
                 {% set shipping = 0 %}
                 {% set tax = 0 %}
-                {% for item in po.get('items', []) %}
+                {% for item in inv.get('items', []) %}
                     {% set subtotal = subtotal + (item.get('price', 0)|float * item.get('qty', 1)|float) %}
                     {% set shipping = shipping + (item.get('shipping', 0)|float) %}
                     {% set tax = tax + ((item.get('price', 0)|float * item.get('qty', 1)|float) * (item.get('tax', 0)|float / 100)) %}
@@ -332,23 +332,23 @@
                 </div>
                 <div class="totals-row final">
                     <span>TOTAL:</span>
-                    <span>₹{{ "%.2f"|format(po.get('total', 0)|float) }}</span>
+                    <span>₹{{ "%.2f"|format(inv.get('total', 0)|float) }}</span>
                 </div>
             </div>
         </div>
         
         <!-- AMOUNT IN WORDS -->
         <div class="amount-words-box">
-            <strong>Amount In Words:</strong> {{ po.get('total', 0) | num_words }}
+            <strong>Amount In Words:</strong> {{ inv.get('total', 0) | num_words }}
         </div>
         
         <!-- TERMS -->
         <div class="terms-section">
             <h4 class="terms-title">Terms and Conditions</h4>
             <ul class="terms-list">
-                <li>1) Payment Terms: {{ po.get('payment_terms', '100% against Product delivery.') }}</li>
-                {% if po.get('notes') %}
-                <li>2) Notes: {{ po.get('notes') }}</li>
+                <li>1) Payment Terms: {{ inv.get('payment_terms', '100% against Product delivery.') }}</li>
+                {% if inv.get('notes') %}
+                <li>2) Notes: {{ inv.get('notes') }}</li>
                 {% else %}
                 <li>2) No other quotation attached. This is an emergency travel</li>
                 {% endif %}

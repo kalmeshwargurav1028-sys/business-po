@@ -1,210 +1,6 @@
-{% extends "base.html" %}
+import re
 
-{% block title %}Create Invoice - Business Dashboard{% endblock %}
-{% block page_title %}Create Invoice{% endblock %}
-
-{% block content %}
-<style>
-    .split-layout {
-        display: flex;
-        gap: 2rem;
-        max-width: 1600px;
-        margin: 0 auto;
-        align-items: flex-start;
-    }
-    .form-section {
-        flex: 1;
-        min-width: 0;
-    }
-    .preview-section {
-        flex: 1;
-        min-width: 0;
-        position: sticky;
-        top: 20px;
-        background: #f1f5f9;
-        padding: 1.5rem;
-        border-radius: 8px;
-        border: 1px solid #cbd5e1;
-    }
-    
-    .form-label {
-        font-size: 0.85rem;
-        color: var(--text-muted);
-        margin-bottom: 0.5rem;
-        display: block;
-    }
-    .po-card {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        margin-bottom: 1.5rem;
-        border: 1px solid #e2e8f0;
-    }
-    .po-card-header {
-        padding: 1rem 1.25rem;
-        border-bottom: 1px solid #e2e8f0;
-        font-weight: 600;
-        font-size: 1rem;
-        color: #1e293b;
-    }
-    .po-card-body {
-        padding: 1.25rem;
-    }
-    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
-    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
-    
-    .item-table { width: 100%; border-collapse: collapse; }
-    .item-table th {
-        font-size: 0.75rem;
-        color: var(--text-muted);
-        text-transform: uppercase;
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 0.5rem;
-        text-align: left;
-    }
-    .item-table td { padding: 0.5rem 0.25rem; }
-    
-    .item-input {
-        width: 100%;
-        padding: 0.5rem 0.75rem;
-        border: 1px solid #cbd5e1;
-        border-radius: 4px;
-        font-size: 0.9rem;
-        box-sizing: border-box;
-    }
-    .item-input:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-    }
-    
-    .btn-add-item {
-        width: 100%;
-        padding: 0.75rem;
-        background: transparent;
-        border: 1px dashed var(--border-color);
-        color: var(--primary-color);
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 600;
-        margin-top: 1rem;
-    }
-    .btn-add-item:hover { background: #f8fafc; border-color: var(--primary-color); }
-    
-    /* Live Preview Styles */
-    .invoice-preview {
-        background: white;
-        padding: 2.5rem;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        aspect-ratio: 1 / 1.414;
-        width: 100%;
-        margin: 0 auto;
-        color: #1e293b;
-        position: relative;
-        overflow: hidden;
-    }
-    .preview-header {
-        display: flex;
-        justify-content: space-between;
-        border-bottom: 2px solid #2563eb;
-        padding-bottom: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    .preview-title { font-size: 2rem; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 1px; }
-    .preview-meta { text-align: right; font-size: 0.85rem; color: #64748b; }
-    
-    .preview-bill-to { margin-bottom: 2rem; font-size: 0.9rem; }
-    .preview-bill-to h4 { margin: 0 0 0.25rem 0; color: #475569; font-size: 0.8rem; text-transform: uppercase; }
-    .preview-bill-to strong { color: #1e293b; font-size: 1.1rem; }
-    
-    .preview-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; font-size: 0.9rem; }
-    .preview-table th { background: #f8fafc; border-bottom: 1px solid #cbd5e1; padding: 0.75rem; text-align: left; color: #475569; }
-    .preview-table td { border-bottom: 1px solid #e2e8f0; padding: 0.75rem; }
-    
-    .preview-summary { width: 250px; margin-left: auto; font-size: 0.9rem; }
-    .preview-summary-row { display: flex; justify-content: space-between; padding: 0.25rem 0; }
-    .preview-total-row { display: flex; justify-content: space-between; padding: 0.75rem 0; border-top: 2px solid #1e293b; font-weight: bold; font-size: 1.1rem; margin-top: 0.5rem; }
-    
-    .qr-placeholder { width: 100px; height: 100px; border: 1px dashed #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: #94a3b8; margin-top: 1rem; }
-    
-    .action-bar { margin-top: 1rem; display: flex; justify-content: space-between; background: white; padding: 1rem; border-radius: 8px; box-shadow: 0 -4px 10px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }
-</style>
-
-<div style="max-width: 900px; margin: 0 auto;">
-    <form method="POST" action="{{ url_for('create_invoice') }}" id="invoice-form">
-        <input type="hidden" name="action" id="form-action" value="generated">
-        
-        <div class="po-card">
-            <div class="po-card-header">1. Invoice Details</div>
-            <div class="po-card-body">
-                <div class="grid-2">
-                    <div>
-                        <label class="form-label">Invoice Number</label>
-                        <input type="text" name="invoice_number" id="input-inv-num" class="item-input live-update" value="{{ invoice_number }}" readonly style="background: #f1f5f9; font-weight: bold;">
-                    </div>
-                    <div>
-                        <label class="form-label">Date</label>
-                        <input type="date" name="invoice_date" id="input-date" class="item-input live-update" required>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="po-card">
-            <div class="po-card-header">2. Bill To</div>
-            <div class="po-card-body">
-                <label class="form-label">Select Customer</label>
-                <div style="display: flex; gap: 1rem; margin-bottom: 1rem; align-items: flex-start;">
-                    <div style="flex: 1;">
-                        <select class="item-input live-update" name="vendor" id="input-vendor" required>
-                            <option value="" disabled selected>-- Select --</option>
-                            {% for vendor in vendors %}
-                            <option value="{{ vendor._id }}" data-name="{{ vendor.name }}" data-address="{{ vendor.address }}" data-phone="{{ vendor.phone }}">{{ vendor.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <a href="{{ url_for('add_vendor') }}" class="btn btn-primary" style="padding: 0.5rem 1rem; width: auto; white-space: nowrap; border-radius: 4px;"><i class="fas fa-plus"></i> New Customer</a>
-                </div>
-                
-                <label class="form-label">Address</label>
-                <textarea class="item-input live-update" name="billing_address" id="input-address" rows="2"></textarea>
-            </div>
-        </div>
-        
-        <div class="po-card">
-            <div class="po-card-header">3. Line Items</div>
-            <div class="po-card-body">
-                <table class="item-table">
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th style="width: 60px;" title="Quantity of items">Qty</th>
-                            <th style="width: 100px;" title="Price per individual unit">Price</th>
-                            <th style="width: 30px;"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="invoice-items-tbody">
-                        <tr class="item-row">
-                            <td><input type="text" name="item_name[]" class="item-input input-item-name live-update" placeholder="Description" required></td>
-                            <td><input type="number" name="qty[]" class="item-input input-item-qty live-update row-calc" value="1" min="1"></td>
-                            <td><input type="number" name="unit_price[]" class="item-input input-item-price live-update row-calc" value="0.00" step="0.01"></td>
-                            <td><button type="button" class="btn-remove" style="border:none; background:none; color:#ef4444; cursor:pointer;"><i class="fas fa-times"></i></button></td>
-                            <input type="hidden" name="tax[]" value="0">
-                            <input type="hidden" name="discount[]" value="0">
-                        </tr>
-                    </tbody>
-                </table>
-                <button type="button" class="btn-add-item" onclick="addRow()">+ Add Line Item</button>
-                
-                <!-- Hidden inputs for totals to send to backend -->
-                <input type="hidden" name="subtotal" id="form_subtotal" value="0">
-                <input type="hidden" name="total_tax" id="form_tax" value="0">
-                <input type="hidden" name="total_discount" id="form_discount" value="0">
-                <input type="hidden" name="total" id="form_total" value="0">
-            </div>
-        </div>
-        
-        <!-- PREVIEW MODAL -->
+modal_html = """<!-- PREVIEW MODAL -->
 <div id="previewModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; overflow-y: auto; padding: 2rem; box-sizing: border-box; backdrop-filter: blur(4px);">
     <div style="max-width: 850px; margin: 0 auto; position: relative; background: white; padding: 40px; border-radius: 8px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
         
@@ -270,9 +66,9 @@
                     <p class="company-phone">Phone: +91 80-2289-5900, +91 80-2289-5990</p>
                 </div>
                 <div class="header-right">
-                    <h1 class="doc-title" id="pv-doc-title">INVOICE</h1>
+                    <h1 class="doc-title" id="pv-doc-title">PURCHASE ORDER</h1>
                     <div class="meta-text">Date: <span id="pv-date"></span></div>
-                    <div class="meta-text"><span id="pv-num-label">INVOICE #:</span> <span id="pv-doc-num">{{ invoice_number }}</span></div>
+                    <div class="meta-text"><span id="pv-num-label">PO #:</span> <span id="pv-doc-num"></span></div>
                 </div>
             </div>
             
@@ -347,71 +143,9 @@
         </div>
     </div>
 </div>
+"""
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('input-date').valueAsDate = new Date();
-        updatePreview();
-        attachEventListeners();
-        
-        document.getElementById('input-vendor').addEventListener('change', function() {
-            const selected = this.options[this.selectedIndex];
-            if(selected.value) {
-                document.getElementById('input-address').value = selected.getAttribute('data-address') || '';
-                updatePreview();
-            }
-        });
-        
-        // Add event listeners to all live-update elements
-        document.querySelectorAll('.live-update').forEach(el => {
-            el.addEventListener('input', updatePreview);
-            el.addEventListener('change', updatePreview);
-        });
-    });
-
-    function attachEventListeners() {
-        document.querySelectorAll('.row-calc').forEach(input => {
-            input.removeEventListener('input', updatePreview);
-            input.addEventListener('input', updatePreview);
-        });
-        
-        document.querySelectorAll('.btn-remove').forEach(btn => {
-            btn.removeEventListener('click', removeRow);
-            btn.addEventListener('click', removeRow);
-        });
-        
-        document.querySelectorAll('.input-item-name').forEach(input => {
-            input.removeEventListener('input', updatePreview);
-            input.addEventListener('input', updatePreview);
-        });
-    }
-
-    function addRow() {
-        const tbody = document.getElementById('invoice-items-tbody');
-        const tr = document.createElement('tr');
-        tr.className = 'item-row';
-        tr.innerHTML = `
-            <td><input type="text" name="item_name[]" class="item-input input-item-name live-update" placeholder="Description" required></td>
-            <td><input type="number" name="qty[]" class="item-input input-item-qty live-update row-calc" value="1" min="1"></td>
-            <td><input type="number" name="unit_price[]" class="item-input input-item-price live-update row-calc" value="0.00" step="0.01"></td>
-            <td><button type="button" class="btn-remove" style="border:none; background:none; color:#ef4444; cursor:pointer;"><i class="fas fa-times"></i></button></td>
-            <input type="hidden" name="tax[]" value="0">
-            <input type="hidden" name="discount[]" value="0">
-        `;
-        tbody.appendChild(tr);
-        attachEventListeners();
-        updatePreview();
-    }
-
-    function removeRow(e) {
-        const tbody = document.getElementById('invoice-items-tbody');
-        if (tbody.querySelectorAll('tr').length > 1) {
-            e.target.closest('tr').remove();
-            updatePreview();
-        }
-    }
-
-    function numberToWords(n) {
+js_update_function = """function numberToWords(n) {
         if (n === 0) return "Zero Rupees";
         const ones = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"];
         const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
@@ -489,33 +223,38 @@
         // Words
         document.getElementById('pv-words').textContent = numberToWords(parseFloat(grandTotalStr || 0));
     }
+"""
 
-    </script>
+def patch_file(filepath, is_invoice=False):
+    with open(filepath, 'r') as f:
+        content = f.read()
 
-<style>
-    @media print {
-        body * { visibility: hidden; }
-        #print-area, #print-area * { visibility: visible; }
-        #previewModal {
-            position: absolute !important;
-            background: transparent !important;
-            padding: 0 !important;
-            backdrop-filter: none !important;
-            overflow: visible !important;
-        }
-        #print-area { 
-            position: absolute !important; 
-            left: 0 !important; 
-            top: 0 !important; 
-            width: 100% !important; 
-            box-shadow: none !important; 
-            border-radius: 0 !important;
-            margin: 0 !important;
-            padding: 0 !important;
-        }
-        header, .sidebar, .action-bar { display: none !important; }
-        /* Hide modal controls when printing */
-        .btn, button, h3 { display: none !important; }
-    }
-</style>
-{% endblock %}
+    # Replace HTML
+    start_idx = content.find("<!-- PREVIEW MODAL -->")
+    # find the end of the script tag or body
+    end_idx = content.find("<script>", start_idx)
+    if end_idx == -1: end_idx = len(content)
+
+    new_html = modal_html
+    if is_invoice:
+        new_html = new_html.replace('PURCHASE ORDER', 'INVOICE')
+        new_html = new_html.replace('PO #:', 'INVOICE #:')
+        new_html = new_html.replace('pv-doc-num"></span>', 'pv-doc-num">{{ invoice_number }}</span>')
+    else:
+        new_html = new_html.replace('pv-doc-num"></span>', 'pv-doc-num">{{ po_number }}</span>')
+
+    content = content[:start_idx] + new_html + "\n" + content[end_idx:]
+
+    # Replace updatePreview function
+    start_func = content.find("function updatePreview()")
+    if start_func != -1:
+        # find the matching closing brace for the function... hacky but let's just regex replace everything up to the next function or script end
+        end_func = content.find("</script>", start_func)
+        content = content[:start_func] + js_update_function + "\n    " + content[end_func:]
+        
+    with open(filepath, 'w') as f:
+        f.write(content)
+
+patch_file('business_dashboard/templates/create_po.html', is_invoice=False)
+patch_file('business_dashboard/templates/create_invoice.html', is_invoice=True)
+print("Modals Patched")
