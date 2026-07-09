@@ -227,7 +227,7 @@
 {% set show_stats = session.get('user_role') == 'Admin' or session.get('user_permissions', {}).get('view_financials') %}
 {% set show_history = session.get('user_role') == 'Admin' or session.get('user_permissions', {}).get('view_pos') %}
 
-<div class="{% if show_stats or show_history %}layout-2col{% else %}layout-center{% endif %}">
+<div class="layout-2col">
     <!-- LEFT COLUMN: Generator -->
     <div class="left-col">
         <form method="POST" action="{{ url_for('create_po') }}" id="po-form">
@@ -382,38 +382,7 @@
     </div>
     
     <!-- RIGHT COLUMN: Stats & History -->
-    {% if show_stats or show_history %}
     <div class="right-col">
-        {% if show_stats %}
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-            <!-- Stat Card 1 -->
-            <div class="po-card" style="margin-bottom: 0;">
-                <div class="po-card-body" style="padding: 1rem; display: flex; align-items: center; gap: 1rem;">
-                    <div style="background-color: #eff6ff; padding: 0.75rem; border-radius: 8px; color: var(--primary-color);">
-                        <i class="fas fa-file-invoice fa-lg"></i>
-                    </div>
-                    <div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Total POs</div>
-                        <div style="font-size: 1.25rem; font-weight: bold; color: var(--text-main);">{{ total_pos }}</div>
-                    </div>
-                </div>
-            </div>
-            <!-- Stat Card 2 -->
-            <div class="po-card" style="margin-bottom: 0;">
-                <div class="po-card-body" style="padding: 1rem; display: flex; align-items: center; gap: 1rem;">
-                    <div style="background-color: #f0fdf4; padding: 0.75rem; border-radius: 8px; color: #16a34a;">
-                        <i class="fas fa-money-bill-wave fa-lg"></i>
-                    </div>
-                    <div>
-                        <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Total Amount</div>
-                        <div style="font-size: 1.25rem; font-weight: bold; color: var(--text-main);">{{ "{:,.2f}".format(total_amount) }}</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% endif %}
-        
-        {% if show_history %}
         <!-- Purchase Order History -->
         <div class="po-card" style="margin-bottom: 0; min-height: 500px;">
             <div class="po-card-header"><i class="fas fa-history" style="margin-right: 8px; color: var(--text-muted);"></i>Purchase Order History</div>
@@ -464,9 +433,7 @@
                 
             </div>
         </div>
-        {% endif %}
     </div>
-    {% endif %}
 </div>
 
 <!-- PREVIEW MODAL -->
