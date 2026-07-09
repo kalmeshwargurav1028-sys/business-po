@@ -8,8 +8,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 <style>
     .profile-container {
-        max-width: 900px;
-        margin: 0 auto;
+        width: 100%;
+        margin: 0;
     }
     .profile-card {
         background: white;
@@ -118,10 +118,12 @@
     /* Input Group for Country Code */
     .input-group {
         display: flex;
-        align-items: center;
+        align-items: stretch;
     }
     .input-group-text {
-        padding: 0.75rem 1rem;
+        display: flex;
+        align-items: center;
+        padding: 0 0.75rem;
         background-color: #f1f5f9;
         border: 1px solid #cbd5e1;
         border-right: none;
