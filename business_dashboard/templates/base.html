@@ -86,11 +86,6 @@
                     </a>
                 </li>
                 {% endif %}
-                <li>
-                    <a href="{{ url_for('tasks') }}" class="{% if request.endpoint == 'tasks' %}active{% endif %}" style="justify-content: space-between;">
-                        <span><i class="fas fa-tasks" style="width: 20px;"></i> {% if session.get('user_role') == 'Admin' %}Task Delegation{% else %}My Tasks{% endif %}</span>
-                    </a>
-                </li>
 
             </ul>
         </aside>
